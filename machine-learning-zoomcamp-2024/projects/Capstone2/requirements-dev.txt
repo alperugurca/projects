@@ -1,0 +1,9 @@
+# Include all production dependencies
+-r requirements.txt
+
+# Development dependencies
+pytest==7.4.2
+black==23.7.0
+flake8==6.1.0
+jupyter==1.0.0
+notebook==7.0.3 
