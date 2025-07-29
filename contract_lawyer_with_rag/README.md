@@ -1,1 +1,1 @@
-!(contract_rag)[contract_rag.jpg]
+![contract_rag](contract_rag.jpg)
