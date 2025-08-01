@@ -1,4 +1,4 @@
-![llmproject1.mp4](llmproject1.mp4)
+![llmproject1.mp4](https://youtu.be/1O2yPlnN2n8)
 
 # CV Analyzer
 
