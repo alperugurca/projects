@@ -1,4 +1,5 @@
-![llmproject1.mp4](https://youtu.be/1O2yPlnN2n8)
+[![Watch the video](https://img.youtube.com/vi/1O2yPlnN2n8/0.jpg)](https://youtu.be/1O2yPlnN2n8)
+
 
 # CV Analyzer
 
