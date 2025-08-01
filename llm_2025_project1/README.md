@@ -1,4 +1,5 @@
-[![Watch the video](https://img.youtube.com/vi/1O2yPlnN2n8/0.jpg)](https://youtu.be/1O2yPlnN2n8)
+# Video:
+[![Watch the video](https://i.ytimg.com/vi/1O2yPlnN2n8/maxresdefault.jpg)](https://youtu.be/1O2yPlnN2n8)
 
 
 # CV Analyzer
