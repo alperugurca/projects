@@ -1,3 +1,5 @@
+![llmproject1.mp4](llmproject1.mp4)
+
 # CV Analyzer
 
 An end-to-end RAG (Retrieval Augmented Generation) application for analyzing resumes and providing detailed feedback.
