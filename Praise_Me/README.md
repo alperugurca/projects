@@ -31,4 +31,7 @@ docker compose up -d
 
 ### Config
 - Required env: `OPENAI_API_KEY`
+
 - Default model in code: `gpt-4.1-nano`
+
+# ![Öv_Beni.png](Öv_Beni.png)
