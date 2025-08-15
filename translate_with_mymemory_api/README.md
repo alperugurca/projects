@@ -28,16 +28,3 @@ This app is ready to deploy to Hugging Face Spaces. Just upload the files and it
 ## API
 
 Uses the free MyMemory Translation API: https://mymemory.translated.net/
-
----
-title: Translate
-emoji: 🌍
-colorFrom: indigo
-colorTo: green
-sdk: gradio
-sdk_version: 5.42.0
-app_file: app.py
-pinned: false
-license: mit
-short_description: Minimal translation app built with Gradio using MyMemory API
----
