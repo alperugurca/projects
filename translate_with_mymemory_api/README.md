@@ -1,5 +1,7 @@
 # 🌍 Simple Translator
 
+https://huggingface.co/spaces/alperugurcan/translate
+
 A minimal translation app built with Gradio using the MyMemory API.
 
 ## Features
@@ -28,3 +30,4 @@ This app is ready to deploy to Hugging Face Spaces. Just upload the files and it
 ## API
 
 Uses the free MyMemory Translation API: https://mymemory.translated.net/
+
