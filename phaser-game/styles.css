@@ -1,0 +1,47 @@
+/* Spellcaster Game Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #1a1a1a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: 'Arial', sans-serif;
+  overflow: hidden;
+}
+
+#game-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Game canvas styling */
+canvas {
+  display: block;
+  margin: 0 auto;
+  border: 2px solid #333;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Loading state */
+.loading {
+  color: #fff;
+  font-size: 18px;
+  text-align: center;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  canvas {
+    max-width: 100%;
+    max-height: 100vh;
+  }
+}
