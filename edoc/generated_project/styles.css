@@ -1,0 +1,163 @@
+/*
+  Calculator UI Styles
+  -------------------------------------------------
+  This stylesheet provides a clean, responsive design for the
+  calculator defined in index.html. It uses CSS custom properties
+  (variables) for easy theming and scales gracefully on mobile
+  devices (≤ 600 px).
+*/
+
+/* -------------------------------------------------
+   Root Variables – colour palette, typography & spacing
+   ------------------------------------------------- */
+:root {
+  /* Colours */
+  --color-primary: #2c3e50;          /* dark blue – used for outlines */
+  --color-bg: #f5f5f5;               /* page background */
+  --color-display-bg: #fafafa;      /* display background */
+  --color-button-bg: #e0e0e0;       /* neutral digit button */
+  --color-operator-bg: #ff9500;     /* orange – operators */
+  --color-equals-bg: #34c759;       /* green – equals */
+  --color-clear-bg: #ff3b30;        /* red – clear */
+  --color-button-text: #000000;     /* default text colour */
+  --color-operator-text: #ffffff;   /* text on coloured buttons */
+
+  /* Typography */
+  --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-size-base: 1rem;           /* base font size – will be scaled */
+  --font-size-display: 2rem;        /* large display */
+  --font-size-button: 1.2rem;       /* button label */
+
+  /* Spacing & sizing */
+  --spacing: 0.5rem;                /* general gap */
+  --button-size: 3rem;              /* height of a button */
+}
+
+/* -------------------------------------------------
+   Global Reset & Base Styles
+   ------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: var(--font-size-base);
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  user-select: none; /* prevent accidental text selection */
+}
+
+/* -------------------------------------------------
+   Calculator Container – centred flex box
+   ------------------------------------------------- */
+.calculator {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch; /* children take full width */
+  justify-content: flex-start;
+  width: 90vw;
+  max-width: 400px;
+  background-color: #ffffff;
+  padding: var(--spacing);
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* -------------------------------------------------
+   Display – right‑aligned, large, with overflow handling
+   ------------------------------------------------- */
+.display {
+  width: 100%;
+  padding: var(--spacing);
+  font-size: var(--font-size-display);
+  text-align: right;
+  background-color: var(--color-display-bg);
+  border: 2px solid var(--color-primary);
+  border-radius: 0.5rem;
+  overflow-x: auto;   /* allow long numbers to scroll */
+  overflow-y: hidden;
+  white-space: nowrap;
+  color: var(--color-primary);
+  margin-bottom: var(--spacing);
+}
+
+/* -------------------------------------------------
+   Buttons Grid – CSS Grid 4 columns
+   ------------------------------------------------- */
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing);
+  width: 100%;
+}
+
+/* -------------------------------------------------
+   Base Button Styles
+   ------------------------------------------------- */
+.btn {
+  width: 100%;
+  height: var(--button-size);
+  background-color: var(--color-button-bg);
+  color: var(--color-button-text);
+  border: none;
+  border-radius: 0.5rem;
+  font-size: var(--font-size-button);
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/* Interaction states – accessible */
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* -------------------------------------------------
+   Modifier Classes – colour variations
+   ------------------------------------------------- */
+.digit {
+  background-color: var(--color-button-bg);
+  color: var(--color-button-text);
+}
+
+.operator {
+  background-color: var(--color-operator-bg);
+  color: var(--color-operator-text);
+}
+
+.equals {
+  background-color: var(--color-equals-bg);
+  color: var(--color-operator-text);
+}
+
+.clear {
+  background-color: var(--color-clear-bg);
+  color: var(--color-operator-text);
+}
+
+/* -------------------------------------------------
+   Responsive Adjustments – mobile first (≤ 600 px)
+   ------------------------------------------------- */
+@media (max-width: 600px) {
+  :root {
+    --spacing: 0.4rem;
+    --button-size: 2.5rem;
+    --font-size-display: 1.5rem;
+    --font-size-button: 1rem;
+  }
+}

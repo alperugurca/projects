@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Main calculator container -->
+    <div class="calculator">
+        <!-- Display area -->
+        <div id="display" class="display" aria-live="polite" tabindex="0">0</div>
+        <!-- Button grid -->
+        <div class="buttons">
+            <!-- Clear -->
+            <button id="clear" class="btn clear" tabindex="0" aria-label="Clear">C</button>
+            <!-- Operators -->
+            <button class="btn operator" data-operator="/" tabindex="0" aria-label="Divide">/</button>
+            <button class="btn operator" data-operator="*" tabindex="0" aria-label="Multiply">*</button>
+            <button class="btn operator" data-operator="-" tabindex="0" aria-label="Subtract">-</button>
+            <!-- Digits -->
+            <button class="btn digit" data-value="7" tabindex="0">7</button>
+            <button class="btn digit" data-value="8" tabindex="0">8</button>
+            <button class="btn digit" data-value="9" tabindex="0">9</button>
+            <button class="btn operator" data-operator="+" tabindex="0" aria-label="Add">+</button>
+            <button class="btn digit" data-value="4" tabindex="0">4</button>
+            <button class="btn digit" data-value="5" tabindex="0">5</button>
+            <button class="btn digit" data-value="6" tabindex="0">6</button>
+            <button id="equals" class="btn equals" tabindex="0" aria-label="Equals">=</button>
+            <button class="btn digit" data-value="1" tabindex="0">1</button>
+            <button class="btn digit" data-value="2" tabindex="0">2</button>
+            <button class="btn digit" data-value="3" tabindex="0">3</button>
+            <button class="btn digit" data-value="0" tabindex="0">0</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
