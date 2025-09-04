@@ -1,0 +1,18 @@
+[
+    {
+        "text": "A strong resume should highlight quantifiable achievements and impact. Use action verbs and specific metrics to demonstrate success.",
+        "type": "best_practice"
+    },
+    {
+        "text": "Technical skills should be organized by proficiency level and relevance to the target role. Include both programming languages and tools/frameworks.",
+        "type": "skills_guidance"
+    },
+    {
+        "text": "Professional experience should be presented in reverse chronological order. Each role should emphasize achievements rather than just responsibilities.",
+        "type": "experience_format"
+    },
+    {
+        "text": "Education section should include relevant coursework, projects, and academic achievements that align with the target position.",
+        "type": "education_guidance"
+    }
+]
