@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AE AI</title>
+  <meta name="description" content="AE AI - The future of agentic intelligence. Experience a premium, highly interactive vector showcase.">
+  
+  <!-- Modern premium font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* CSS Design System - AE AI */
+    :root {
+      --bg-primary: #030306;
+      --color-white: #ffffff;
+      --color-cyan: #00f2fe;
+      --color-indigo: #4facfe;
+      --color-violet: #7f00ff;
+      --color-magenta: #ff007f;
+      --glow-color: rgba(0, 242, 254, 0.6);
+      --glow-intense: rgba(127, 0, 255, 0.85);
+      --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-primary);
+      font-family: var(--font-sans);
+      color: var(--color-white);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Background Canvas Layer */
+    #particle-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Ambient Radial Glow behind cursor */
+    .ambient-glow {
+      position: absolute;
+      width: 55vmax;
+      height: 55vmax;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle, 
+        rgba(0, 242, 254, 0.07) 0%, 
+        rgba(127, 0, 255, 0.03) 45%, 
+        rgba(255, 0, 127, 0.01) 75%,
+        transparent 100%
+      );
+      filter: blur(80px);
+      z-index: 0;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      will-change: left, top;
+    }
+
+    /* 3D Perspective Wrapper */
+    .logo-wrapper {
+      position: relative;
+      z-index: 2;
+      perspective: 1500px;
+      transform-style: preserve-3d;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* Interactive Logo Container */
+    .logo-container {
+      position: relative;
+      width: 32vw;
+      max-width: 460px;
+      min-width: 280px;
+      aspect-ratio: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transform-style: preserve-3d;
+      pointer-events: auto;
+      cursor: pointer;
+      will-change: transform;
+    }
+
+    /* Core SVG Logo */
+    #ae-logo {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      filter: drop-shadow(0 0 8px rgba(0, 242, 254, 0.05));
+      transition: filter 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+      will-change: filter, transform;
+    }
+
+    /* Path element strokes - Set linecap to butt to prevent messy overlaps at corners */
+    .logo-path {
+      fill: none;
+      stroke: var(--color-white);
+      stroke-width: 55px;
+      stroke-linecap: butt;
+      stroke-linejoin: miter;
+      stroke-miterlimit: 10;
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+      will-change: stroke-dashoffset, stroke, filter;
+    }
+
+    /* Once fully loaded and completed */
+    .logo-container.completed #ae-logo {
+      filter: 
+        drop-shadow(0 0 15px rgba(0, 242, 254, 0.3))
+        drop-shadow(0 0 35px rgba(127, 0, 255, 0.2))
+        drop-shadow(0 0 70px rgba(255, 0, 127, 0.05));
+      animation: logo-breathe 6s ease-in-out infinite alternate 2s;
+    }
+
+    .logo-container.completed .logo-path {
+      stroke: var(--color-white);
+      animation: path-glow 5s ease-in-out infinite alternate;
+    }
+
+    /* Cinematic breath floating */
+    @keyframes logo-breathe {
+      0% {
+        transform: translateZ(0px) rotateX(0deg) rotateY(0deg);
+      }
+      100% {
+        transform: translateZ(35px) translateY(-8px) rotateX(1.5deg) rotateY(-1.5deg);
+      }
+    }
+
+    /* High quality glowing pulse */
+    @keyframes path-glow {
+      0% {
+        stroke: #ffffff;
+        filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+      }
+      50% {
+        stroke: #f2f9ff;
+        filter: drop-shadow(0 0 12px var(--glow-color));
+      }
+      100% {
+        stroke: #ffffff;
+        filter: drop-shadow(0 0 8px var(--glow-intense));
+      }
+    }
+
+    /* Soft organic blurred backing orb */
+    .logo-orb {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle, 
+        rgba(0, 242, 254, 0.15) 0%, 
+        rgba(127, 0, 255, 0.06) 50%, 
+        transparent 80%
+      );
+      filter: blur(45px);
+      z-index: -1;
+      pointer-events: none;
+      transform: translateZ(-60px);
+      opacity: 0;
+      transition: opacity 2s ease;
+      will-change: opacity;
+    }
+
+    .logo-container.completed .logo-orb {
+      opacity: 1;
+      animation: orb-drift 12s ease-in-out infinite alternate;
+    }
+
+    @keyframes orb-drift {
+      0% { transform: translate3d(-15px, -15px, -50px) scale(0.95); }
+      100% { transform: translate3d(20px, 20px, -70px) scale(1.1); }
+    }
+
+    /* Screen Flash Overlay on Completion */
+    .screen-flash {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #ffffff;
+      z-index: 5;
+      pointer-events: none;
+      opacity: 0;
+      will-change: opacity;
+    }
+
+    /* Glassmorphic Controls */
+    .minimal-controls {
+      position: absolute;
+      bottom: 30px;
+      right: 30px;
+      z-index: 10;
+      display: flex;
+      gap: 15px;
+    }
+
+    .control-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: 
+        background 0.3s, 
+        border-color 0.3s, 
+        color 0.3s, 
+        transform 0.3s, 
+        box-shadow 0.3s;
+      outline: none;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(0, 242, 254, 0.3);
+      color: var(--color-cyan);
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 0 12px rgba(0, 242, 254, 0.2);
+    }
+
+    .control-btn:active {
+      transform: scale(0.95);
+    }
+
+    .control-btn svg {
+      transition: transform 0.4s ease;
+    }
+
+    .control-btn:hover .icon-replay {
+      transform: rotate(-180deg);
+    }
+
+    /* Interactive Logo Hover */
+    .logo-container:hover #ae-logo {
+      filter: 
+        drop-shadow(0 0 22px var(--glow-color))
+        drop-shadow(0 0 42px var(--glow-intense))
+        drop-shadow(0 0 85px rgba(255, 0, 127, 0.15));
+    }
+
+    /* Absolute Hide Scrollbars */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Dynamic Canvas Layer -->
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- Ambient Cursor Glow -->
+  <div class="ambient-glow" id="ambient-glow"></div>
+
+  <!-- Screen Flash for cinematic transitions -->
+  <div class="screen-flash" id="screen-flash"></div>
+
+  <!-- Perspective Wrapper -->
+  <div class="logo-wrapper" id="logo-wrapper">
+    <div class="logo-container" id="logo-container">
+      
+      <svg id="ae-logo" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Clip path specifically for the left leg bottom cut -->
+          <clipPath id="left-leg-clip">
+            <rect x="0" y="0" width="1000" height="800" />
+          </clipPath>
+          
+          <!-- Core high quality neon filters -->
+          <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur1" />
+            <feGaussianBlur in="SourceGraphic" stdDeviation="22" result="blur2" />
+            <feMerge>
+              <feMergeNode in="blur2" />
+              <feMergeNode in="blur1" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        
+        <!-- Render with neon glow, allowing native miter joins on unclipped endpoints -->
+        <g filter="url(#neon-glow)">
+          <!-- Left Diagonal (A Left leg) - CLIPPED ONLY HERE to get a flat horizontal bottom-left cap -->
+          <path id="path-left-diag" class="logo-path" d="M 500,200 L 113,830" clip-path="url(#left-leg-clip)" pathLength="1000" />
+          
+          <!-- Right Diagonal + Bottom Right Horizontal (Joined natively to produce a perfect sharp mitered bottom-right point) -->
+          <path id="path-right-and-bottom" class="logo-path" d="M 500,200 L 850,770 L 500,770" pathLength="1000" />
+          
+          <!-- Center Vertical (A right / E spine) -->
+          <path id="path-center-vert" class="logo-path" d="M 500,200 L 500,770" pathLength="1000" />
+          
+          <!-- Middle Horizontal (Fully aligned and proportional middle crossbar) -->
+          <path id="path-middle-horiz" class="logo-path" d="M 325,485 L 675,485" pathLength="1000" />
+        </g>
+      </svg>
+      
+      <!-- Interactive backing lighting -->
+      <div class="logo-orb"></div>
+    </div>
+  </div>
+
+  <!-- Minimal Glass Controls -->
+  <div class="minimal-controls">
+    <button class="control-btn" id="btn-sound" aria-label="Toggle Audio Ambient">
+      <svg class="icon-music" viewBox="0 0 24 24" width="20" height="20">
+        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill="currentColor"/>
+      </svg>
+    </button>
+    <button class="control-btn" id="btn-replay" aria-label="Replay Intro Animation">
+      <svg class="icon-replay" viewBox="0 0 24 24" width="20" height="20">
+        <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="currentColor"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Core Showcase Control Logic -->
+  <script>
+    // --- Global State ---
+    const state = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+      mouseX: window.innerWidth / 2,
+      mouseY: window.innerHeight / 2,
+      targetMouseX: window.innerWidth / 2,
+      targetMouseY: window.innerHeight / 2,
+      logoRect: null,
+      isHoveringLogo: false,
+      isIntroPlaying: true,
+      audioInitialized: false,
+      audioPlaying: false
+    };
+
+    // --- DOM Elements ---
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    const logoContainer = document.getElementById('logo-container');
+    const logoWrapper = document.getElementById('logo-wrapper');
+    const ambientGlow = document.getElementById('ambient-glow');
+    const btnSound = document.getElementById('btn-sound');
+    const btnReplay = document.getElementById('btn-replay');
+    const screenFlash = document.getElementById('screen-flash');
+
+    const paths = {
+      leftDiag: document.getElementById('path-left-diag'),
+      rightAndBottom: document.getElementById('path-right-and-bottom'),
+      centerVert: document.getElementById('path-center-vert'),
+      middleHoriz: document.getElementById('path-middle-horiz')
+    };
+
+    // Resize canvas
+    function handleResize() {
+      state.width = canvas.width = window.innerWidth;
+      state.height = canvas.height = window.innerHeight;
+      state.logoRect = logoContainer.getBoundingClientRect();
+    }
+    window.addEventListener('resize', handleResize);
+    setTimeout(handleResize, 100);
+
+    // --- High Fidelity JS Laser Welding Path Animator ---
+    const animationTimeline = [
+      { path: paths.leftDiag, start: 0, duration: 1000 },
+      { path: paths.rightAndBottom, start: 450, duration: 1500 }, // Longer duration for composite path
+      { path: paths.centerVert, start: 900, duration: 800 },
+      { path: paths.middleHoriz, start: 1400, duration: 1000 } // Proportionate duration for single horizontal segment
+    ];
+
+    let animationStartTime = null;
+
+    function playCinematicIntro() {
+      state.isIntroPlaying = true;
+      logoContainer.classList.remove('completed');
+      
+      // Clear path offsets
+      Object.values(paths).forEach(p => {
+        p.style.strokeDashoffset = '1000';
+      });
+
+      animationStartTime = performance.now();
+      requestAnimationFrame(animatePaths);
+    }
+
+    function animatePaths(now) {
+      const elapsed = now - animationStartTime;
+      let allFinished = true;
+
+      animationTimeline.forEach(step => {
+        if (elapsed < step.start) {
+          step.path.style.strokeDashoffset = '1000';
+          allFinished = false;
+        } else {
+          const stepElapsed = elapsed - step.start;
+          const progress = Math.min(stepElapsed / step.duration, 1.0);
+          
+          // Cubic easeInOut LERP
+          const ease = progress < 0.5 
+            ? 4 * progress * progress * progress 
+            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+          const currentOffset = 1000 - (ease * 1000);
+          step.path.style.strokeDashoffset = currentOffset;
+
+          if (progress < 1.0) {
+            allFinished = false;
+            // Spawn sparks at the leading welding tip
+            spawnLaserSparks(step.path, ease);
+          }
+        }
+      });
+
+      if (!allFinished) {
+        requestAnimationFrame(animatePaths);
+      } else {
+        // Complete Cinematic Sequence
+        state.isIntroPlaying = false;
+        logoContainer.classList.add('completed');
+        
+        // Trigger screen flash
+        screenFlash.style.opacity = '0.35';
+        setTimeout(() => {
+          screenFlash.style.transition = 'opacity 1.5s ease-out';
+          screenFlash.style.opacity = '0';
+          setTimeout(() => { screenFlash.style.transition = ''; }, 1600);
+        }, 30);
+
+        // Flash bursts
+        triggerExplosionReveal();
+      }
+    }
+
+    // Convert SVG path length coordinate to screen pixels and spawn welder sparks
+    function spawnLaserSparks(path, progress) {
+      try {
+        const svg = document.getElementById('ae-logo');
+        const pathLength = path.getTotalLength();
+        const svgPoint = path.getPointAtLength(progress * pathLength);
+        
+        // Transform SVG point coordinates to real screen pixel space
+        const svgRect = svg.getBoundingClientRect();
+        const screenX = svgRect.left + (svgPoint.x / 1000) * svgRect.width;
+        const screenY = svgRect.top + (svgPoint.y / 1000) * svgRect.height;
+        
+        // Spawn 3 welding sparks per frame per active path
+        for (let i = 0; i < 3; i++) {
+          sparks.push(new WelderSpark(screenX, screenY));
+        }
+      } catch (err) {}
+    }
+
+    // Trigger reveal explosions
+    function triggerExplosionReveal() {
+      if (!state.logoRect) return;
+      const cx = state.logoRect.left + state.logoRect.width / 2;
+      const cy = state.logoRect.top + state.logoRect.height / 2;
+      
+      shockwaves.push(new Shockwave(cx, cy));
+      for (let i = 0; i < 70; i++) {
+        sparks.push(new WelderSpark(cx + (Math.random() - 0.5) * 80, cy + (Math.random() - 0.5) * 80, true));
+      }
+    }
+
+    // --- Mouse & 3D Parallax Tilt ---
+    let tiltX = 0;
+    let tiltY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      state.targetMouseX = e.clientX;
+      state.targetMouseY = e.clientY;
+    });
+
+    function updateParallaxAndGlow() {
+      // LERP Mouse coords for the cursor background glow
+      state.mouseX += (state.targetMouseX - state.mouseX) * 0.08;
+      state.mouseY += (state.targetMouseY - state.mouseY) * 0.08;
+
+      ambientGlow.style.left = `${state.mouseX}px`;
+      ambientGlow.style.top = `${state.mouseY}px`;
+
+      // 3D Parallax Tilt
+      if (!state.isIntroPlaying) {
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        const normX = (state.targetMouseX - cx) / cx;
+        const normY = (state.targetMouseY - cy) / cy;
+
+        let targetTiltX = 0;
+        let targetTiltY = 0;
+
+        if (state.isHoveringLogo) {
+          targetTiltX = -normY * 20;
+          targetTiltY = normX * 20;
+        } else {
+          targetTiltX = -normY * 8;
+          targetTiltY = normX * 8;
+        }
+
+        tiltX += (targetTiltX - tiltX) * 0.1;
+        tiltY += (targetTiltY - tiltY) * 0.1;
+
+        logoContainer.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateZ(15px)`;
+      } else {
+        logoContainer.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0)';
+      }
+
+      requestAnimationFrame(updateParallaxAndGlow);
+    }
+    requestAnimationFrame(updateParallaxAndGlow);
+
+    // Hover triggers
+    logoContainer.addEventListener('mouseenter', () => {
+      state.isHoveringLogo = true;
+      adjustSynthFilter(true);
+    });
+    logoContainer.addEventListener('mouseleave', () => {
+      state.isHoveringLogo = false;
+      logoContainer.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0)';
+      adjustSynthFilter(false);
+    });
+
+    // --- Interactive Neural Network Particle Engine ---
+    const particles = [];
+    const sparks = [];
+    const shockwaves = [];
+
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+
+      reset() {
+        this.x = Math.random() * state.width;
+        this.y = Math.random() * state.height;
+        this.vx = (Math.random() - 0.5) * 0.35;
+        this.vy = (Math.random() - 0.5) * 0.35;
+        this.size = Math.random() * 1.5 + 0.5;
+        this.alpha = Math.random() * 0.35 + 0.1;
+        this.baseAlpha = this.alpha;
+        this.color = Math.random() > 0.8 ? '#00f2fe' : '#ffffff';
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Boundary Wrap
+        if (this.x < 0) this.x = state.width;
+        if (this.x > state.width) this.x = 0;
+        if (this.y < 0) this.y = state.height;
+        if (this.y > state.height) this.y = 0;
+
+        // Mouse Repulsion Force
+        const dx = this.x - state.targetMouseX;
+        const dy = this.y - state.targetMouseY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist < 140) {
+          const force = (140 - dist) / 140;
+          this.x += (dx / dist) * force * 2.0;
+          this.y += (dy / dist) * force * 2.0;
+          this.alpha = Math.min(this.baseAlpha * 2.5, 0.8);
+        } else {
+          this.alpha += (this.baseAlpha - this.alpha) * 0.05;
+        }
+
+        // Swirling Galaxy Vortex Core on Logo Hover
+        if (state.isHoveringLogo && state.logoRect) {
+          const lcx = state.logoRect.left + state.logoRect.width / 2;
+          const lcy = state.logoRect.top + state.logoRect.height / 2;
+          
+          const ldx = this.x - lcx;
+          const ldy = this.y - lcy;
+          const ldist = Math.sqrt(ldx * ldx + ldy * ldy);
+
+          if (ldist < 240) {
+            const rotSpeed = 2.2;
+            const suction = (240 - ldist) * 0.02;
+            
+            // Pull in center
+            this.vx += (-ldx / ldist) * suction * 0.045;
+            this.vy += (-ldy / ldist) * suction * 0.045;
+
+            // Perpendicular swirl vector
+            this.vx += (-ldy / ldist) * rotSpeed * 0.06;
+            this.vy += (ldx / ldist) * rotSpeed * 0.06;
+
+            this.color = '#00f2fe';
+          }
+        } else {
+          // Recover velocity LERP
+          this.vx += ((Math.random() - 0.5) * 0.1 - this.vx) * 0.02;
+          this.vy += ((Math.random() - 0.5) * 0.1 - this.vy) * 0.02;
+        }
+      }
+
+      draw() {
+        ctx.fillStyle = this.color;
+        ctx.globalAlpha = this.alpha;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Dynamic Welder Spark physics emitter
+    class WelderSpark {
+      constructor(x, y, bigFlash = false) {
+        this.x = x;
+        this.y = y;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = bigFlash ? (Math.random() * 6 + 3) : (Math.random() * 4 + 1);
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        this.size = Math.random() * 2.0 + (bigFlash ? 1.5 : 0.5);
+        this.life = 1.0;
+        this.decay = Math.random() * 0.035 + 0.02;
+        // Welder blue/white plasma sparks
+        this.color = Math.random() > 0.4 ? '#ffffff' : '#00f2fe';
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vx *= 0.95;
+        this.vy *= 0.95;
+        this.vy += 0.12; // High gravity spark drops
+        this.life -= this.decay;
+      }
+
+      draw() {
+        if (this.life <= 0) return;
+        ctx.fillStyle = this.color;
+        ctx.globalAlpha = this.life;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    class Shockwave {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.radius = 10;
+        this.maxRadius = Math.max(state.width, state.height) * 0.4;
+        this.speed = 15;
+        this.alpha = 1.0;
+      }
+
+      update() {
+        this.radius += this.speed;
+        this.speed *= 0.97;
+        this.alpha = 1.0 - (this.radius / this.maxRadius);
+      }
+
+      draw() {
+        ctx.strokeStyle = '#00f2fe';
+        ctx.lineWidth = 2.5;
+        ctx.globalAlpha = this.alpha * 0.4;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#7f00ff';
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = this.alpha * 0.2;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius * 0.85, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    // Populate Particles
+    const maxParticles = Math.min(130, Math.floor((state.width * state.height) / 9500));
+    for (let i = 0; i < maxParticles; i++) {
+      particles.push(new Particle());
+    }
+
+    // Main 60 FPS loop
+    function loop() {
+      // Clear with soft alpha overlay to support subtle spark trails
+      ctx.fillStyle = 'rgba(3, 3, 6, 0.28)';
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillRect(0, 0, state.width, state.height);
+      
+      ctx.globalCompositeOperation = 'screen';
+
+      // 1. Draw Constellation Connection Lines
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const p1 = particles[i];
+          const p2 = particles[j];
+          const dx = p1.x - p2.x;
+          const dy = p1.y - p2.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 110) {
+            const alpha = (1.0 - (dist / 110)) * 0.15;
+            ctx.strokeStyle = p1.color === '#00f2fe' ? '#00f2fe' : '#7f00ff';
+            ctx.lineWidth = 0.5;
+            ctx.globalAlpha = alpha;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // 2. Render particles
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+
+      // 3. Render Shockwaves
+      for (let i = shockwaves.length - 1; i >= 0; i--) {
+        const sw = shockwaves[i];
+        sw.update();
+        sw.draw();
+
+        // Blast wave interactions with neural dots
+        particles.forEach(p => {
+          const dx = p.x - sw.x;
+          const dy = p.y - sw.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (Math.abs(dist - sw.radius) < 25) {
+            const push = sw.alpha * 6;
+            p.x += (dx / dist) * push;
+            p.y += (dy / dist) * push;
+          }
+        });
+
+        if (sw.alpha <= 0 || sw.radius >= sw.maxRadius) {
+          shockwaves.splice(i, 1);
+        }
+      }
+
+      // 4. Render Sparks
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const s = sparks[i];
+        s.update();
+        s.draw();
+        if (s.life <= 0) {
+          sparks.splice(i, 1);
+        }
+      }
+
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    // Dynamic screen blasts
+    document.body.addEventListener('click', (e) => {
+      if (e.target.closest('.minimal-controls')) return;
+
+      const cx = e.clientX;
+      const cy = e.clientY;
+
+      shockwaves.push(new Shockwave(cx, cy));
+      const count = Math.floor(Math.random() * 20) + 20;
+      for (let i = 0; i < count; i++) {
+        sparks.push(new WelderSpark(cx, cy, true));
+      }
+
+      playCosmicChime();
+    });
+
+    // Replay hook
+    btnReplay.addEventListener('click', (e) => {
+      e.stopPropagation();
+      playCinematicIntro();
+      playCosmicChime();
+    });
+
+    // Run intro immediately
+    window.addEventListener('DOMContentLoaded', () => {
+      playCinematicIntro();
+    });
+
+
+    // --- High Fidelity Web Audio Synthesizer ---
+    let audioCtx = null;
+    let gainNode = null;
+    let synthOsc1 = null;
+    let synthOsc2 = null;
+    let lowpassFilter = null;
+
+    function buildSynthEngine() {
+      if (state.audioInitialized) return;
+
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContext();
+
+      // Master Gain
+      gainNode = audioCtx.createGain();
+      gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+      gainNode.connect(audioCtx.destination);
+
+      // Lowpass resonant liquid filter
+      lowpassFilter = audioCtx.createBiquadFilter();
+      lowpassFilter.type = 'lowpass';
+      lowpassFilter.frequency.setValueAtTime(190, audioCtx.currentTime);
+      lowpassFilter.Q.setValueAtTime(4.5, audioCtx.currentTime);
+      lowpassFilter.connect(gainNode);
+
+      // Dual detuned deep oscillators for wide warm stereo pad
+      synthOsc1 = audioCtx.createOscillator();
+      synthOsc1.type = 'sawtooth';
+      synthOsc1.frequency.setValueAtTime(55, audioCtx.currentTime); // A1 note
+
+      synthOsc2 = audioCtx.createOscillator();
+      synthOsc2.type = 'triangle';
+      synthOsc2.frequency.setValueAtTime(55.25, audioCtx.currentTime); // detuned cents
+
+      // sub-bass
+      const subOsc = audioCtx.createOscillator();
+      subOsc.type = 'sine';
+      subOsc.frequency.setValueAtTime(110, audioCtx.currentTime); // A2 note
+
+      synthOsc1.connect(lowpassFilter);
+      synthOsc2.connect(lowpassFilter);
+      subOsc.connect(lowpassFilter);
+
+      synthOsc1.start();
+      synthOsc2.start();
+      subOsc.start();
+
+      state.audioInitialized = true;
+    }
+
+    function startSynth() {
+      buildSynthEngine();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.22, audioCtx.currentTime + 2.5);
+
+      state.audioPlaying = true;
+      btnSound.style.color = 'var(--color-cyan)';
+      btnSound.style.borderColor = 'rgba(0, 242, 254, 0.4)';
+    }
+
+    function stopSynth() {
+      if (!state.audioInitialized) return;
+
+      gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.0);
+
+      state.audioPlaying = false;
+      btnSound.style.color = 'rgba(255, 255, 255, 0.5)';
+      btnSound.style.borderColor = 'rgba(255, 255, 255, 0.07)';
+    }
+
+    // Sweeping synthesizer cutoffs on hover
+    function adjustSynthFilter(isOpen) {
+      if (!state.audioPlaying || !lowpassFilter) return;
+
+      const target = isOpen ? 720 : 190;
+      lowpassFilter.frequency.cancelScheduledValues(audioCtx.currentTime);
+      lowpassFilter.frequency.setValueAtTime(lowpassFilter.frequency.value, audioCtx.currentTime);
+      lowpassFilter.frequency.exponentialRampToValueAtTime(target, audioCtx.currentTime + 1.0);
+    }
+
+    // Play chime synthesizers on clicks
+    function playCosmicChime() {
+      if (!state.audioPlaying || !audioCtx) return;
+
+      const now = audioCtx.currentTime;
+      const chime = audioCtx.createOscillator();
+      chime.type = 'sine';
+      
+      const pentatonic = [220, 277.18, 329.63, 440, 554.37, 659.25, 880];
+      const selectedNote = pentatonic[Math.floor(Math.random() * pentatonic.length)];
+      chime.frequency.setValueAtTime(selectedNote, now);
+      chime.frequency.exponentialRampToValueAtTime(selectedNote * 1.5, now + 1.4);
+
+      const chimeGain = audioCtx.createGain();
+      chimeGain.gain.setValueAtTime(0.08, now);
+      chimeGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
+
+      // Analog Delay Sim
+      const delay = audioCtx.createDelay();
+      delay.delayTime.setValueAtTime(0.24, now);
+      const delayGain = audioCtx.createGain();
+      delayGain.gain.setValueAtTime(0.04, now);
+
+      chime.connect(chimeGain);
+      chimeGain.connect(audioCtx.destination);
+
+      chimeGain.connect(delay);
+      delay.connect(delayGain);
+      delayGain.connect(audioCtx.destination);
+
+      chime.start(now);
+      chime.stop(now + 2.0);
+    }
+
+    // Toggle button handler
+    btnSound.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (state.audioPlaying) {
+        stopSynth();
+      } else {
+        startSynth();
+      }
+    });
+  </script>
+</body>
+</html>

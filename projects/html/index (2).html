@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hyper Reality</title>
+    <meta
+      name="description"
+      content="A cinematic, responsive, single-file web experience built to feel like a portal instead of a page."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Sora:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #07131f;
+        --bg-secondary: #102535;
+        --surface: rgba(8, 24, 36, 0.7);
+        --surface-strong: rgba(9, 24, 37, 0.92);
+        --surface-soft: rgba(255, 255, 255, 0.05);
+        --text: #f4efe6;
+        --muted: #a3b6c8;
+        --accent: #ffab2e;
+        --accent-2: #0de1cf;
+        --accent-3: #ff6f61;
+        --border: rgba(255, 255, 255, 0.12);
+        --glow: rgba(255, 171, 46, 0.34);
+        --shadow: 0 30px 90px rgba(0, 0, 0, 0.38);
+        --radius: 26px;
+        --radius-sm: 18px;
+        --content-width: min(1180px, calc(100vw - 2.4rem));
+        --font-display: "Sora", "Trebuchet MS", sans-serif;
+        --font-body: "IBM Plex Sans", "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--text);
+        font-family: var(--font-body);
+        background:
+          radial-gradient(circle at 15% 20%, rgba(13, 225, 207, 0.18), transparent 26%),
+          radial-gradient(circle at 80% 12%, rgba(255, 111, 97, 0.22), transparent 30%),
+          radial-gradient(circle at 50% 80%, rgba(255, 171, 46, 0.12), transparent 28%),
+          linear-gradient(160deg, var(--bg) 0%, #091824 48%, #061018 100%);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        background-size: 120px 120px;
+        mask-image: radial-gradient(circle at center, black 30%, transparent 82%);
+        opacity: 0.18;
+        z-index: -2;
+      }
+
+      ::selection {
+        background: rgba(255, 171, 46, 0.32);
+        color: #fff8eb;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      canvas#constellation {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -3;
+        opacity: 0.82;
+      }
+
+      .noise {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        opacity: 0.12;
+        background-image:
+          radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.12) 0.9px, transparent 1px),
+          radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.1) 0.9px, transparent 1px),
+          radial-gradient(circle at 40% 75%, rgba(255, 255, 255, 0.08) 0.8px, transparent 1px);
+        background-size: 160px 160px, 220px 220px, 200px 200px;
+      }
+
+      .cursor-glow {
+        position: fixed;
+        width: 280px;
+        height: 280px;
+        border-radius: 50%;
+        background: radial-gradient(circle, var(--glow) 0%, transparent 68%);
+        pointer-events: none;
+        filter: blur(10px);
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        transition: opacity 180ms ease;
+        z-index: -1;
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        backdrop-filter: blur(18px);
+        background: rgba(5, 15, 24, 0.45);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .header-inner,
+      .section-inner,
+      .footer-inner {
+        width: var(--content-width);
+        margin: 0 auto;
+      }
+
+      .header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        min-height: 74px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.85rem;
+        font-family: var(--font-display);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .brand-mark {
+        width: 2.4rem;
+        height: 2.4rem;
+        border-radius: 0.85rem;
+        display: grid;
+        place-items: center;
+        background:
+          linear-gradient(135deg, rgba(255, 171, 46, 0.34), rgba(13, 225, 207, 0.34)),
+          rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: inset 0 0 24px rgba(255, 255, 255, 0.08);
+      }
+
+      .brand-mark span {
+        font-size: 1rem;
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .nav a {
+        position: relative;
+      }
+
+      .nav a::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -0.35rem;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 220ms ease;
+      }
+
+      .nav a:hover::after,
+      .nav a:focus-visible::after {
+        transform: scaleX(1);
+      }
+
+      main {
+        position: relative;
+      }
+
+      .section {
+        padding: 5rem 0;
+      }
+
+      .hero {
+        min-height: calc(100vh - 74px);
+        display: grid;
+        align-items: center;
+        padding: 4.5rem 0 3rem;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: clamp(2.2rem, 4vw, 4rem);
+        align-items: center;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.7rem;
+        padding: 0.55rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #dbe7f1;
+        letter-spacing: 0.18em;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 0.55rem;
+        height: 0.55rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        box-shadow: 0 0 14px var(--glow);
+      }
+
+      .hero h1 {
+        margin: 1.35rem 0 1rem;
+        font-family: var(--font-display);
+        font-size: clamp(3.5rem, 9vw, 7rem);
+        line-height: 0.93;
+        letter-spacing: -0.05em;
+      }
+
+      .hero h1 span {
+        display: block;
+      }
+
+      .hero h1 span:last-child {
+        color: transparent;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2), #fff8eb);
+        -webkit-background-clip: text;
+        background-clip: text;
+      }
+
+      .hero-lede {
+        max-width: 40rem;
+        margin: 0;
+        font-size: 1.12rem;
+        line-height: 1.75;
+        color: var(--muted);
+      }
+
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.65rem;
+        padding: 0.95rem 1.4rem;
+        border: 0;
+        border-radius: 999px;
+        cursor: pointer;
+        transition:
+          transform 220ms ease,
+          box-shadow 220ms ease,
+          background 220ms ease,
+          color 220ms ease;
+      }
+
+      .button-primary {
+        color: #08121d;
+        background: linear-gradient(135deg, var(--accent), #ffd386);
+        box-shadow: 0 18px 40px rgba(255, 171, 46, 0.3);
+      }
+
+      .button-secondary {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      .button:hover,
+      .button:focus-visible {
+        transform: translateY(-2px);
+      }
+
+      .button-primary:hover,
+      .button-primary:focus-visible {
+        box-shadow: 0 26px 48px rgba(255, 171, 46, 0.38);
+      }
+
+      .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        margin-top: 1.6rem;
+      }
+
+      .status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.78rem 1rem;
+        border-radius: 999px;
+        color: #dce8f4;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .status-chip strong {
+        color: var(--text);
+      }
+
+      .hero-visual {
+        position: relative;
+        min-height: 620px;
+      }
+
+      .orbital-stage {
+        position: relative;
+        height: 100%;
+        min-height: 620px;
+        border-radius: calc(var(--radius) + 10px);
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 50% 50%, rgba(13, 225, 207, 0.18), transparent 35%),
+          radial-gradient(circle at 68% 36%, rgba(255, 111, 97, 0.2), transparent 24%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: var(--shadow);
+      }
+
+      .halo {
+        position: absolute;
+        inset: 50%;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .halo-a {
+        width: 18rem;
+        height: 18rem;
+        box-shadow: 0 0 40px rgba(255, 171, 46, 0.18);
+        animation: spin 16s linear infinite;
+      }
+
+      .halo-b {
+        width: 30rem;
+        height: 30rem;
+        border-style: dashed;
+        opacity: 0.55;
+        animation: spin 28s linear infinite reverse;
+      }
+
+      .halo-c {
+        width: 40rem;
+        height: 40rem;
+        opacity: 0.35;
+        animation: pulse 10s ease-in-out infinite;
+      }
+
+      .beam {
+        position: absolute;
+        inset: auto 0 0;
+        height: 45%;
+        background:
+          linear-gradient(180deg, transparent 0%, rgba(13, 225, 207, 0.08) 28%, transparent 100%),
+          linear-gradient(90deg, transparent 0%, rgba(255, 171, 46, 0.18) 50%, transparent 100%);
+        transform: perspective(1000px) rotateX(68deg);
+        transform-origin: bottom center;
+      }
+
+      .core-card,
+      .floating-panel {
+        position: absolute;
+        backdrop-filter: blur(18px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(8, 24, 36, 0.72);
+        box-shadow: var(--shadow);
+      }
+
+      .core-card {
+        left: 50%;
+        top: 50%;
+        width: min(74%, 29rem);
+        padding: 1.5rem;
+        transform: translate(-50%, -50%);
+        border-radius: var(--radius);
+      }
+
+      .core-card p,
+      .floating-panel p {
+        margin: 0 0 0.55rem;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .core-card h2 {
+        margin: 0 0 1.15rem;
+        font-family: var(--font-display);
+        font-size: clamp(1.8rem, 3vw, 2.55rem);
+        line-height: 1.05;
+      }
+
+      .signal-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .signal-list li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.9rem;
+        padding: 0.85rem 1rem;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .signal-list span:last-child {
+        color: #fff4d9;
+      }
+
+      .floating-panel {
+        width: min(16rem, 42vw);
+        padding: 1rem;
+        border-radius: 20px;
+      }
+
+      .floating-panel.top {
+        top: 1.5rem;
+        right: 1.5rem;
+        animation: bob 6.5s ease-in-out infinite;
+      }
+
+      .floating-panel.bottom {
+        left: 1.5rem;
+        bottom: 1.5rem;
+        animation: bob 7.4s ease-in-out infinite reverse;
+      }
+
+      .metric-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 0.85rem;
+        font-size: 0.95rem;
+      }
+
+      .metric-bar {
+        height: 0.55rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+      }
+
+      .metric-bar span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      }
+
+      .section-head {
+        display: grid;
+        gap: 1rem;
+        align-items: end;
+        grid-template-columns: 1fr auto;
+        margin-bottom: 2rem;
+      }
+
+      .section-head h2 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        line-height: 1;
+        letter-spacing: -0.05em;
+      }
+
+      .section-head p {
+        margin: 0;
+        max-width: 42rem;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .accent-note {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #f9efd5;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+      }
+
+      .accent-note::before {
+        content: "";
+        width: 2.1rem;
+        height: 1px;
+        background: linear-gradient(90deg, var(--accent), transparent);
+      }
+
+      .marquee {
+        margin-top: 1.5rem;
+        border-block: 1px solid rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .marquee-track {
+        display: flex;
+        gap: 2rem;
+        padding: 0.95rem 0;
+        min-width: max-content;
+        animation: marquee 18s linear infinite;
+        color: #dce8f4;
+        text-transform: uppercase;
+        letter-spacing: 0.3em;
+        font-size: 0.8rem;
+      }
+
+      .marquee-track span {
+        display: inline-flex;
+        align-items: center;
+        gap: 2rem;
+      }
+
+      .marquee-track span::after {
+        content: "///";
+        color: var(--accent);
+      }
+
+      .feature-grid,
+      .metrics-grid,
+      .manifesto-grid,
+      .portal-grid {
+        display: grid;
+        gap: 1.2rem;
+      }
+
+      .feature-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .feature-card,
+      .metric-card,
+      .manifesto-card,
+      .portal-card,
+      .mode-preview,
+      .transmission-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: var(--radius);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)),
+          var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .feature-card,
+      .manifesto-card,
+      .portal-card,
+      .transmission-card,
+      .mode-preview {
+        padding: 1.45rem;
+      }
+
+      .feature-card::before,
+      .metric-card::before,
+      .manifesto-card::before,
+      .portal-card::before,
+      .mode-preview::before,
+      .transmission-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 40%);
+        pointer-events: none;
+      }
+
+      .feature-card:hover,
+      .manifesto-card:hover,
+      .portal-card:hover,
+      .mode-preview:hover,
+      .transmission-card:hover {
+        transform: translateY(-4px);
+      }
+
+      .feature-card,
+      .manifesto-card,
+      .portal-card,
+      .mode-preview,
+      .transmission-card {
+        transition: transform 220ms ease, border-color 220ms ease;
+      }
+
+      .feature-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 1rem;
+        display: grid;
+        place-items: center;
+        margin-bottom: 1.1rem;
+        background:
+          linear-gradient(140deg, rgba(255, 171, 46, 0.16), rgba(13, 225, 207, 0.18)),
+          rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .feature-card h3,
+      .manifesto-card h3,
+      .portal-card h3,
+      .mode-preview h3,
+      .transmission-card h3 {
+        margin: 0 0 0.7rem;
+        font-family: var(--font-display);
+        font-size: 1.28rem;
+      }
+
+      .feature-card p,
+      .manifesto-card p,
+      .portal-card p,
+      .mode-preview p,
+      .transmission-card p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .feature-meta {
+        margin-top: 1.15rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        color: #dce8f4;
+      }
+
+      .metrics-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .metric-card {
+        padding: 1.5rem;
+      }
+
+      .metric-label {
+        margin: 0;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        font-size: 0.76rem;
+      }
+
+      .metric-value {
+        margin: 0.5rem 0 0.6rem;
+        font-family: var(--font-display);
+        font-size: clamp(2.4rem, 5vw, 4rem);
+        line-height: 1;
+      }
+
+      .mode-layout {
+        display: grid;
+        grid-template-columns: 0.86fr 1.14fr;
+        gap: 1.2rem;
+        align-items: stretch;
+      }
+
+      .mode-selector {
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .mode-button {
+        text-align: left;
+        padding: 1.15rem 1.2rem;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        cursor: pointer;
+        transition:
+          border-color 220ms ease,
+          transform 220ms ease,
+          background 220ms ease;
+      }
+
+      .mode-button span {
+        display: block;
+      }
+
+      .mode-button strong {
+        display: block;
+        margin-bottom: 0.4rem;
+        font-family: var(--font-display);
+        font-size: 1.05rem;
+      }
+
+      .mode-button small {
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .mode-button:hover,
+      .mode-button:focus-visible,
+      .mode-button.active {
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .preview-band-wrap {
+        display: grid;
+        gap: 0.85rem;
+        margin-top: 1.25rem;
+      }
+
+      .preview-band {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem 1.1rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .preview-band em {
+        color: #fff4d9;
+        font-style: normal;
+      }
+
+      .manifesto-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .manifesto-card {
+        min-height: 200px;
+      }
+
+      .manifesto-step {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, rgba(255, 171, 46, 0.18), rgba(13, 225, 207, 0.24));
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-family: var(--font-display);
+      }
+
+      .portal-grid {
+        grid-template-columns: 1.15fr 0.85fr;
+        align-items: stretch;
+      }
+
+      .portal-card {
+        display: grid;
+        gap: 1.5rem;
+      }
+
+      .portal-form {
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .portal-form label {
+        font-size: 0.92rem;
+        color: #dce8f4;
+      }
+
+      .portal-input {
+        width: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        border-radius: 18px;
+        padding: 1rem 1.05rem;
+      }
+
+      .portal-input:focus {
+        outline: 2px solid rgba(255, 171, 46, 0.3);
+        outline-offset: 3px;
+      }
+
+      .portal-response {
+        min-height: 4rem;
+        margin: 0;
+        color: #fff4d9;
+      }
+
+      .transmission-card {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .transmission-lines {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .transmission-line {
+        display: grid;
+        gap: 0.35rem;
+      }
+
+      .transmission-line span {
+        display: block;
+        width: 100%;
+        height: 0.7rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+      }
+
+      .transmission-line span::before {
+        content: "";
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+        animation: sweep 3.2s ease-in-out infinite;
+      }
+
+      .quote {
+        margin: 0;
+        padding: 1.15rem 1.2rem;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.04);
+        color: #dce8f4;
+        line-height: 1.8;
+      }
+
+      .footer {
+        padding: 2rem 0 3rem;
+      }
+
+      .footer-inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        color: var(--muted);
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(24px);
+        transition:
+          opacity 650ms ease,
+          transform 650ms ease;
+      }
+
+      .reveal.delay-1 {
+        transition-delay: 90ms;
+      }
+
+      .reveal.delay-2 {
+        transition-delay: 180ms;
+      }
+
+      .reveal.delay-3 {
+        transition-delay: 270ms;
+      }
+
+      .reveal.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @keyframes spin {
+        from {
+          transform: translate(-50%, -50%) rotate(0deg);
+        }
+        to {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.06);
+        }
+      }
+
+      @keyframes bob {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-12px);
+        }
+      }
+
+      @keyframes sweep {
+        0% {
+          transform: translateX(-65%);
+        }
+        50% {
+          transform: translateX(8%);
+        }
+        100% {
+          transform: translateX(35%);
+        }
+      }
+
+      @keyframes marquee {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(-50%);
+        }
+      }
+
+      @media (max-width: 1080px) {
+        .hero-grid,
+        .mode-layout,
+        .portal-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-visual {
+          min-height: 520px;
+        }
+
+        .orbital-stage {
+          min-height: 520px;
+        }
+
+        .metrics-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 820px) {
+        .header-inner {
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: center;
+          padding: 0.9rem 0;
+        }
+
+        .nav {
+          display: flex;
+          width: 100%;
+          gap: 0.75rem;
+          overflow-x: auto;
+          padding-bottom: 0.15rem;
+          scrollbar-width: none;
+        }
+
+        .nav::-webkit-scrollbar {
+          display: none;
+        }
+
+        .nav a {
+          flex: 0 0 auto;
+          white-space: nowrap;
+          padding: 0.7rem 0.95rem;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .feature-grid,
+        .manifesto-grid,
+        .metrics-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .section {
+          padding: 4rem 0;
+        }
+
+        .section-head {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          padding-top: 3rem;
+        }
+
+        .hero h1 {
+          font-size: clamp(3rem, 15vw, 5rem);
+        }
+
+        .hero-visual,
+        .orbital-stage {
+          min-height: 480px;
+        }
+
+        .floating-panel {
+          width: min(14rem, 60vw);
+        }
+      }
+
+      @media (max-width: 560px) {
+        .header-inner {
+          min-height: auto;
+          gap: 0.8rem;
+        }
+
+        .hero {
+          min-height: auto;
+        }
+
+        .hero h1 {
+          max-width: 8.6ch;
+          font-size: clamp(1.8rem, 9vw, 2.45rem);
+          line-height: 0.95;
+        }
+
+        .hero h1 span {
+          display: inline;
+        }
+
+        .hero h1 span + span::before {
+          content: " ";
+        }
+
+        .hero-meta,
+        .cta-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .hero-lede {
+          max-width: 19rem;
+          font-size: 0.98rem;
+        }
+
+        .button {
+          width: 100%;
+        }
+
+        .core-card {
+          width: calc(100% - 2rem);
+          padding: 1.2rem;
+        }
+
+        .floating-panel.top {
+          top: 1rem;
+          right: 1rem;
+        }
+
+        .floating-panel.bottom {
+          left: 1rem;
+          bottom: 1rem;
+        }
+
+        .halo-b {
+          width: 22rem;
+          height: 22rem;
+        }
+
+        .halo-c {
+          width: 28rem;
+          height: 28rem;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+
+        .cursor-glow {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="constellation" aria-hidden="true"></canvas>
+    <div class="noise" aria-hidden="true"></div>
+    <div class="cursor-glow" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="#top" aria-label="Hyper Reality home">
+          <span class="brand-mark"><span>HR</span></span>
+          <span>Hyper Reality</span>
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <a href="#systems">Systems</a>
+          <a href="#modes">Modes</a>
+          <a href="#manifesto">Manifesto</a>
+          <a href="#portal">Portal</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero section" id="top">
+        <div class="section-inner hero-grid">
+          <div class="reveal">
+            <p class="eyebrow">Cinematic single-file web architecture</p>
+            <h1>
+              <span>Build the site</span>
+              <span>people remember</span>
+              <span>before it finishes loading.</span>
+            </h1>
+            <p class="hero-lede">
+              A normal landing page would not survive this brief. This one leans
+              into spectacle instead: layered atmospherics, responsive motion,
+              strong typography, and a set of interactions designed to feel more
+              like a portal than a page.
+            </p>
+            <div class="cta-row">
+              <a class="button button-primary" href="#modes">Shift the atmosphere</a>
+              <button class="button button-secondary" type="button" data-scroll="#portal">
+                Open the transmission deck
+              </button>
+            </div>
+            <div class="hero-meta">
+              <div class="status-chip">
+                Live clock
+                <strong id="clock">--:--:--</strong>
+              </div>
+              <div class="status-chip">
+                Creative state
+                <strong>Unreasonably vivid</strong>
+              </div>
+              <div class="status-chip">
+                Reality offset
+                <strong>+12 imagination units</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-visual reveal delay-1">
+            <div class="orbital-stage">
+              <div class="halo halo-a" aria-hidden="true"></div>
+              <div class="halo halo-b" aria-hidden="true"></div>
+              <div class="halo halo-c" aria-hidden="true"></div>
+              <div class="beam" aria-hidden="true"></div>
+
+              <div class="floating-panel top">
+                <p>Signal integrity</p>
+                <div class="metric-line">
+                  <span>Visual drama</span>
+                  <strong>98%</strong>
+                </div>
+                <div class="metric-bar" aria-hidden="true">
+                  <span style="width: 98%"></span>
+                </div>
+                <div class="metric-line">
+                  <span>Motion control</span>
+                  <strong>93%</strong>
+                </div>
+                <div class="metric-bar" aria-hidden="true">
+                  <span style="width: 93%"></span>
+                </div>
+              </div>
+
+              <div class="core-card">
+                <p>Reality Engine // active</p>
+                <h2>Everything here is tuned to feel deliberate.</h2>
+                <ul class="signal-list">
+                  <li>
+                    <span>Layered gradients and orbital geometry</span>
+                    <span>visual depth</span>
+                  </li>
+                  <li>
+                    <span>Theme shifting with instant palette remapping</span>
+                    <span>mood control</span>
+                  </li>
+                  <li>
+                    <span>Canvas constellation reacting to the pointer</span>
+                    <span>ambient life</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="floating-panel bottom">
+                <p>Spatial note</p>
+                <div class="metric-line">
+                  <span>Depth layers</span>
+                  <strong>09</strong>
+                </div>
+                <div class="metric-line">
+                  <span>Friction points</span>
+                  <strong>00</strong>
+                </div>
+                <div class="metric-line">
+                  <span>Audience memory</span>
+                  <strong>high</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="marquee" aria-hidden="true">
+          <div class="marquee-track">
+            <span>hyperreal visuals</span>
+            <span>responsive architecture</span>
+            <span>pointer-reactive atmosphere</span>
+            <span>single-file deployment</span>
+            <span>hyperreal visuals</span>
+            <span>responsive architecture</span>
+            <span>pointer-reactive atmosphere</span>
+            <span>single-file deployment</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="systems">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <div>
+              <div class="accent-note">System stack</div>
+              <h2>Designed to feel impossible, coded to stay practical.</h2>
+            </div>
+            <p>
+              The experience is dramatic on purpose, but it is still portable:
+              one HTML file, no frameworks, responsive behavior, and accessible
+              semantics underneath the theatrics.
+            </p>
+          </div>
+
+          <div class="feature-grid">
+            <article class="feature-card reveal delay-1">
+              <div class="feature-icon" aria-hidden="true">01</div>
+              <h3>Cinematic composition</h3>
+              <p>
+                Split-screen hero framing, oversized display type, and layered
+                glass panels create a sense of scale before the user scrolls.
+              </p>
+              <div class="feature-meta">Intentional layout, not template energy.</div>
+            </article>
+
+            <article class="feature-card reveal delay-2">
+              <div class="feature-icon" aria-hidden="true">02</div>
+              <h3>Atmospheric motion</h3>
+              <p>
+                Halos rotate, signal bars sweep, cards reveal in sequence, and
+                the background constellation reacts without overwhelming the page.
+              </p>
+              <div class="feature-meta">Motion supports mood instead of decorating emptiness.</div>
+            </article>
+
+            <article class="feature-card reveal delay-3">
+              <div class="feature-icon" aria-hidden="true">03</div>
+              <h3>Standalone delivery</h3>
+              <p>
+                Everything ships together in a single document, which makes it
+                easy to open, remix, host, or hand off without build tooling.
+              </p>
+              <div class="feature-meta">Portable enough for a demo, polished enough for a launch.</div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="metrics">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <div>
+              <div class="accent-note">Proof of wonder</div>
+              <h2>Metrics for a page that refuses to behave like one.</h2>
+            </div>
+            <p>
+              These are playful, but they map to real design choices: distinct
+              sections, animated depth, controlled density, and room for the eye
+              to breathe.
+            </p>
+          </div>
+
+          <div class="metrics-grid">
+            <article class="metric-card reveal delay-1">
+              <p class="metric-label">Visual layers</p>
+              <p class="metric-value" data-target="9" data-suffix="+">0</p>
+              <p>
+                Backgrounds, halos, panels, grids, and highlights work together
+                without collapsing into noise.
+              </p>
+            </article>
+
+            <article class="metric-card reveal delay-2">
+              <p class="metric-label">Responsive zones</p>
+              <p class="metric-value" data-target="4" data-suffix="">0</p>
+              <p>
+                The layout rebalances itself across desktop, tablet, and phone
+                breakpoints with no hidden dependencies.
+              </p>
+            </article>
+
+            <article class="metric-card reveal delay-3">
+              <p class="metric-label">Mood fidelity</p>
+              <p class="metric-value" data-target="100" data-suffix="%">0</p>
+              <p>
+                Theme switching rewires the atmosphere instantly, proving the
+                visual system is coherent rather than accidental.
+              </p>
+            </article>
+
+            <article class="metric-card reveal delay-3">
+              <p class="metric-label">Launch friction</p>
+              <p class="metric-value" data-target="0" data-suffix="">0</p>
+              <p>
+                Open the file and it runs. No install, no bundle step, no excuse
+                for a slow first impression.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="modes">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <div>
+              <div class="accent-note">Mood engine</div>
+              <h2>Shift the entire atmosphere with one click.</h2>
+            </div>
+            <p>
+              A good visual system can stretch without breaking. These modes swap
+              the palette while keeping the composition intact.
+            </p>
+          </div>
+
+          <div class="mode-layout">
+            <div class="mode-selector reveal delay-1" role="tablist" aria-label="Theme modes">
+              <button class="mode-button active" type="button" data-theme="solar">
+                <strong>Solar Pulse</strong>
+                <small>Warm metallic glow with cinematic optimism and a live-wire edge.</small>
+              </button>
+              <button class="mode-button" type="button" data-theme="tidal">
+                <strong>Tidal Neon</strong>
+                <small>Cool electric depth with sharp cyan currents and oceanic contrast.</small>
+              </button>
+              <button class="mode-button" type="button" data-theme="ember">
+                <strong>Ember Vector</strong>
+                <small>Heat, contrast, and late-night launch energy with brighter highlights.</small>
+              </button>
+            </div>
+
+            <article class="mode-preview reveal delay-2">
+              <p id="mode-label">Current mode // Solar Pulse</p>
+              <h3 id="mode-title">Warm radiance with dramatic contrast.</h3>
+              <p id="mode-copy">
+                This default direction balances warmth and clarity, giving the page
+                a premium glow without drifting into softness.
+              </p>
+
+              <div class="preview-band-wrap">
+                <div class="preview-band">
+                  <span>Accent trajectory</span>
+                  <em id="mode-band-a">Amber to cyan</em>
+                </div>
+                <div class="preview-band">
+                  <span>Emotional register</span>
+                  <em id="mode-band-b">Confident, expansive, luminous</em>
+                </div>
+                <div class="preview-band">
+                  <span>Ideal use</span>
+                  <em id="mode-band-c">Flagship launch pages and bold demos</em>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="manifesto">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <div>
+              <div class="accent-note">Manifesto</div>
+              <h2>A page can be expressive without becoming chaotic.</h2>
+            </div>
+            <p>
+              Spectacle works best when every visual decision serves rhythm,
+              orientation, or memory. The goal is not just to impress users. It is
+              to leave them feeling like they visited somewhere distinct.
+            </p>
+          </div>
+
+          <div class="manifesto-grid">
+            <article class="manifesto-card reveal delay-1">
+              <div class="manifesto-step">1</div>
+              <h3>Lead with silhouette</h3>
+              <p>
+                The first screen is built around shape and contrast, so the page
+                reads as a strong composition even before details become visible.
+              </p>
+            </article>
+
+            <article class="manifesto-card reveal delay-2">
+              <div class="manifesto-step">2</div>
+              <h3>Animate the supporting cast</h3>
+              <p>
+                Background systems move slowly while primary actions stay crisp.
+                That keeps the spectacle alive without stealing focus.
+              </p>
+            </article>
+
+            <article class="manifesto-card reveal delay-2">
+              <div class="manifesto-step">3</div>
+              <h3>Preserve tactility on small screens</h3>
+              <p>
+                The same art direction survives on mobile because spacing, hit
+                targets, and typography scale on purpose instead of by accident.
+              </p>
+            </article>
+
+            <article class="manifesto-card reveal delay-3">
+              <div class="manifesto-step">4</div>
+              <h3>Keep the artifact editable</h3>
+              <p>
+                The structure stays understandable, so future edits are quick even
+                though the finished result feels ornate and high-end.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="portal">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <div>
+              <div class="accent-note">Transmission deck</div>
+              <h2>Type an impossible directive and watch the page answer back.</h2>
+            </div>
+            <p>
+              This last section adds a little theater: a lightweight interaction
+              that turns user input into a dramatic response without needing a
+              backend.
+            </p>
+          </div>
+
+          <div class="portal-grid">
+            <article class="portal-card reveal delay-1">
+              <div>
+                <h3>Directive console</h3>
+                <p>
+                  Describe the energy you want this page to broadcast, then transmit
+                  it through the portal.
+                </p>
+              </div>
+
+              <form class="portal-form" id="portal-form">
+                <label for="vision-input">Desired impossible outcome</label>
+                <input
+                  class="portal-input"
+                  id="vision-input"
+                  name="vision"
+                  type="text"
+                  maxlength="90"
+                  value="Turn attention into awe."
+                />
+                <button class="button button-primary" type="submit">Transmit vision</button>
+              </form>
+
+              <p class="portal-response" id="portal-response">
+                Awaiting new coordinates from the creative frontier.
+              </p>
+            </article>
+
+            <article class="transmission-card reveal delay-2">
+              <div>
+                <h3>Signal chamber</h3>
+                <p>
+                  A little ambient machinery to make the close feel ceremonial.
+                </p>
+              </div>
+
+              <div class="transmission-lines" aria-hidden="true">
+                <div class="transmission-line"><span></span></div>
+                <div class="transmission-line"><span style="width: 92%"></span></div>
+                <div class="transmission-line"><span style="width: 84%"></span></div>
+                <div class="transmission-line"><span style="width: 96%"></span></div>
+              </div>
+
+              <p class="quote">
+                "Perfection" is theatrical language, but the craft is real: visual
+                hierarchy, motion discipline, and a layout people will actually
+                remember.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <span>Hyper Reality // built as a self-contained HTML artifact</span>
+        <span id="year"></span>
+      </div>
+    </footer>
+
+    <script>
+      const root = document.documentElement;
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      const themes = {
+        solar: {
+          accent: "#ffab2e",
+          accent2: "#0de1cf",
+          accent3: "#ff6f61",
+          bg: "#07131f",
+          bgSecondary: "#102535",
+          glow: "rgba(255, 171, 46, 0.34)",
+          label: "Current mode // Solar Pulse",
+          title: "Warm radiance with dramatic contrast.",
+          copy:
+            "This default direction balances warmth and clarity, giving the page a premium glow without drifting into softness.",
+          bandA: "Amber to cyan",
+          bandB: "Confident, expansive, luminous",
+          bandC: "Flagship launch pages and bold demos"
+        },
+        tidal: {
+          accent: "#7fe7ff",
+          accent2: "#39ffba",
+          accent3: "#0d8eff",
+          bg: "#04121d",
+          bgSecondary: "#0b2940",
+          glow: "rgba(57, 255, 186, 0.24)",
+          label: "Current mode // Tidal Neon",
+          title: "Cool depth with electric current.",
+          copy:
+            "Tidal Neon leans into a sharper, colder spectrum that feels futuristic, marine, and highly energized.",
+          bandA: "Icy cyan to charged blue",
+          bandB: "Precise, kinetic, lucid",
+          bandC: "Product reveals, tech showcases, immersive demos"
+        },
+        ember: {
+          accent: "#ffd166",
+          accent2: "#ff6b35",
+          accent3: "#ff3d5a",
+          bg: "#180a10",
+          bgSecondary: "#35131f",
+          glow: "rgba(255, 107, 53, 0.3)",
+          label: "Current mode // Ember Vector",
+          title: "Heat, momentum, and launch-night drama.",
+          copy:
+            "Ember Vector turns the page into a hotter, more urgent stage with richer reds and a stronger sense of propulsion.",
+          bandA: "Gold to ember",
+          bandB: "Charged, urgent, magnetic",
+          bandC: "Campaign splashes, founder launches, event intros"
+        }
+      };
+
+      function updateClock() {
+        const clock = document.getElementById("clock");
+        if (!clock) return;
+
+        clock.textContent = new Intl.DateTimeFormat(undefined, {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        }).format(new Date());
+      }
+
+      function initRevealObserver() {
+        const reveals = document.querySelectorAll(".reveal");
+
+        if (!("IntersectionObserver" in window)) {
+          reveals.forEach((element) => element.classList.add("is-visible"));
+          return;
+        }
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              entry.target.classList.add("is-visible");
+              observer.unobserve(entry.target);
+            });
+          },
+          { threshold: 0.14 }
+        );
+
+        reveals.forEach((element) => observer.observe(element));
+      }
+
+      function initMetricCounters() {
+        const values = document.querySelectorAll(".metric-value");
+        const animated = new WeakSet();
+
+        const animateMetric = (element) => {
+          if (animated.has(element)) return;
+          animated.add(element);
+
+          const target = Number(element.dataset.target || 0);
+          const suffix = element.dataset.suffix || "";
+          const duration = prefersReducedMotion ? 1 : 1500;
+          const start = performance.now();
+
+          const render = (now) => {
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = Math.round(target * eased);
+
+            element.textContent = current + suffix;
+
+            if (progress < 1) {
+              requestAnimationFrame(render);
+            }
+          };
+
+          requestAnimationFrame(render);
+        };
+
+        if (!("IntersectionObserver" in window)) {
+          values.forEach(animateMetric);
+          return;
+        }
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              animateMetric(entry.target);
+              observer.unobserve(entry.target);
+            });
+          },
+          { threshold: 0.55 }
+        );
+
+        values.forEach((element) => observer.observe(element));
+      }
+
+      function applyTheme(name) {
+        const theme = themes[name];
+        if (!theme) return;
+
+        root.style.setProperty("--accent", theme.accent);
+        root.style.setProperty("--accent-2", theme.accent2);
+        root.style.setProperty("--accent-3", theme.accent3);
+        root.style.setProperty("--bg", theme.bg);
+        root.style.setProperty("--bg-secondary", theme.bgSecondary);
+        root.style.setProperty("--glow", theme.glow);
+
+        document.getElementById("mode-label").textContent = theme.label;
+        document.getElementById("mode-title").textContent = theme.title;
+        document.getElementById("mode-copy").textContent = theme.copy;
+        document.getElementById("mode-band-a").textContent = theme.bandA;
+        document.getElementById("mode-band-b").textContent = theme.bandB;
+        document.getElementById("mode-band-c").textContent = theme.bandC;
+
+        document.querySelectorAll(".mode-button").forEach((button) => {
+          button.classList.toggle("active", button.dataset.theme === name);
+        });
+      }
+
+      function initThemes() {
+        document.querySelectorAll(".mode-button").forEach((button) => {
+          button.addEventListener("click", () => applyTheme(button.dataset.theme));
+        });
+      }
+
+      function initScrollButtons() {
+        document.querySelectorAll("[data-scroll]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const target = document.querySelector(button.dataset.scroll);
+            target?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
+          });
+        });
+      }
+
+      function initPortalForm() {
+        const form = document.getElementById("portal-form");
+        const input = document.getElementById("vision-input");
+        const response = document.getElementById("portal-response");
+
+        if (!form || !input || !response) return;
+
+        form.addEventListener("submit", (event) => {
+          event.preventDefault();
+
+          const directive = input.value.trim() || "Keep the spectacle honest.";
+          response.textContent =
+            'Transmission accepted: "' +
+            directive +
+            '" is now routed through the Hyper Reality engine.';
+        });
+      }
+
+      function initCursorGlow() {
+        const glow = document.querySelector(".cursor-glow");
+        if (!glow || prefersReducedMotion) return;
+
+        window.addEventListener("pointermove", (event) => {
+          glow.style.opacity = "1";
+          glow.style.left = event.clientX + "px";
+          glow.style.top = event.clientY + "px";
+        });
+
+        window.addEventListener("pointerleave", () => {
+          glow.style.opacity = "0";
+        });
+      }
+
+      function initConstellation() {
+        const canvas = document.getElementById("constellation");
+        if (!canvas) return;
+
+        const context = canvas.getContext("2d");
+        if (!context) return;
+
+        const pointer = { x: -9999, y: -9999 };
+        let particles = [];
+        let animationFrame = 0;
+        let width = 0;
+        let height = 0;
+        let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        const config = {
+          count: 0,
+          maxDistance: 130
+        };
+
+        function resize() {
+          width = window.innerWidth;
+          height = window.innerHeight;
+          dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+          canvas.width = Math.floor(width * dpr);
+          canvas.height = Math.floor(height * dpr);
+          context.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+          config.count = prefersReducedMotion ? 26 : Math.min(88, Math.max(34, Math.floor(width / 20)));
+
+          particles = Array.from({ length: config.count }, () => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 0.45,
+            vy: (Math.random() - 0.5) * 0.45,
+            radius: Math.random() * 1.7 + 0.5
+          }));
+        }
+
+        function drawBackground() {
+          const gradient = context.createRadialGradient(
+            width * 0.5,
+            height * 0.45,
+            0,
+            width * 0.5,
+            height * 0.45,
+            Math.max(width, height) * 0.62
+          );
+
+          gradient.addColorStop(0, "rgba(255, 171, 46, 0.06)");
+          gradient.addColorStop(0.35, "rgba(13, 225, 207, 0.04)");
+          gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+          context.fillStyle = gradient;
+          context.fillRect(0, 0, width, height);
+        }
+
+        function animate() {
+          context.clearRect(0, 0, width, height);
+          drawBackground();
+
+          for (let i = 0; i < particles.length; i += 1) {
+            const particle = particles[i];
+
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+
+            if (particle.x < -20) particle.x = width + 20;
+            if (particle.x > width + 20) particle.x = -20;
+            if (particle.y < -20) particle.y = height + 20;
+            if (particle.y > height + 20) particle.y = -20;
+
+            const dxPointer = pointer.x - particle.x;
+            const dyPointer = pointer.y - particle.y;
+            const pointerDistance = Math.hypot(dxPointer, dyPointer);
+
+            if (!prefersReducedMotion && pointerDistance < 180) {
+              particle.x -= dxPointer * 0.0018;
+              particle.y -= dyPointer * 0.0018;
+            }
+
+            context.beginPath();
+            context.fillStyle = "rgba(255, 255, 255, 0.75)";
+            context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+            context.fill();
+
+            for (let j = i + 1; j < particles.length; j += 1) {
+              const other = particles[j];
+              const dx = particle.x - other.x;
+              const dy = particle.y - other.y;
+              const distance = Math.hypot(dx, dy);
+
+              if (distance > config.maxDistance) continue;
+
+              context.beginPath();
+              context.strokeStyle = "rgba(170, 219, 230, " + (1 - distance / config.maxDistance) * 0.18 + ")";
+              context.lineWidth = 1;
+              context.moveTo(particle.x, particle.y);
+              context.lineTo(other.x, other.y);
+              context.stroke();
+            }
+          }
+
+          if (!prefersReducedMotion) {
+            animationFrame = requestAnimationFrame(animate);
+          }
+        }
+
+        window.addEventListener("pointermove", (event) => {
+          pointer.x = event.clientX;
+          pointer.y = event.clientY;
+        });
+
+        window.addEventListener("pointerleave", () => {
+          pointer.x = -9999;
+          pointer.y = -9999;
+        });
+
+        window.addEventListener("resize", resize);
+
+        resize();
+        animate();
+
+        if (prefersReducedMotion) {
+          cancelAnimationFrame(animationFrame);
+        }
+      }
+
+      document.getElementById("year").textContent = new Date().getFullYear();
+      updateClock();
+      setInterval(updateClock, 1000);
+
+      initRevealObserver();
+      initMetricCounters();
+      initThemes();
+      initScrollButtons();
+      initPortalForm();
+      initCursorGlow();
+      initConstellation();
+    </script>
+  </body>
+</html>

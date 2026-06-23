@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino Manager: The House Always Wins</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Dashboard -->
+    <header class="dashboard">
+        <div class="stat-box">
+            <span class="stat-label">Kasa</span>
+            <span class="stat-value text-green" id="kasa-degeri">$100,000</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">Gün</span>
+            <span class="stat-value" id="gun-degeri">1</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">Aktif Müşteri</span>
+            <span class="stat-value text-blue" id="musteri-sayisi">0</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">İtibar / Merhamet</span>
+            <span class="stat-value text-purple" id="itibar-degeri">Nötr</span>
+        </div>
+    </header>
+
+    <!-- Main Game Area -->
+    <main class="game-container">
+        <!-- Left: Event Log -->
+        <section class="panel event-log-panel">
+            <h2>Olay Kayıtları</h2>
+            <div class="log-container" id="log-container">
+                <div class="log-entry system">Kumarhane kapılarını açtı. Yeni kurbanlar bekleniyor...</div>
+            </div>
+        </section>
+
+        <!-- Center: The Floor (Patrons) -->
+        <section class="panel floor-panel">
+            <h2>Casino Zemini</h2>
+            <div class="patron-list" id="patron-list">
+                <!-- Patron cards will be injected here by JS -->
+            </div>
+        </section>
+
+        <!-- Right: Actions & Upgrades -->
+        <section class="panel actions-panel">
+            <h2>Karanlık Taktikler</h2>
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-target="tab-daily">Günlük</button>
+                <button class="tab-btn" data-target="tab-system">Mimari & YZ</button>
+                <button class="tab-btn" data-target="tab-dark">Acımasız</button>
+            </div>
+
+            <div id="tab-daily" class="tab-content active">
+                <button id="btn-marketing" class="action-btn">
+                    <strong>Pazarlama Kampanyası</strong>
+                    <span>(Yeni avlar getir - $2000)</span>
+                </button>
+                <button id="btn-free-drinks" class="action-btn">
+                    <strong>Ücretsiz İçki Dağıt</strong>
+                    <span>(Yargıyı zayıflatır - $500)</span>
+                </button>
+                <button id="btn-ldw" class="action-btn evil-action">
+                    <strong>Sahte Kazanç (LDW) Algoritması</strong>
+                    <span>(Kayıpları zafer gibi kutla - G.Masraf $1.000)</span>
+                </button>
+                <button id="btn-scent" class="action-btn evil-action">
+                    <strong>Havalandırmaya Koku Bas</strong>
+                    <span>(Enerjiyi artırır - G.Masraf $500)</span>
+                </button>
+                <button id="btn-vip-host" class="action-btn evil-action">
+                    <strong>VIP Host Servisi (Balina Avı)</strong>
+                    <span>(Kazananı masada tut - G.Masraf $1.500)</span>
+                </button>
+            </div>
+
+            <div id="tab-system" class="tab-content">
+                <button id="upg-clocks" class="action-btn upgrade-btn">
+                    <strong>Saatleri ve Pencereleri Kaldır</strong>
+                    <span>(Zaman algısını yok et - $5.000)</span>
+                </button>
+                <button id="upg-maze" class="action-btn upgrade-btn">
+                    <strong>Labirent Zemin Düzeni</strong>
+                    <span>(Çıkışı bulamasınlar - $10.000)</span>
+                </button>
+                <button id="upg-cashier-sludge" class="action-btn upgrade-btn">
+                    <strong>Vezne Frikşonu (Sludge)</strong>
+                    <span>(Vezneyi uzağa sakla ve sırayı yavaşlat - $12.000)</span>
+                </button>
+                <button id="upg-illusion" class="action-btn upgrade-btn">
+                    <strong>Sahte Kontrol İllüzyonu</strong>
+                    <span>(Seçim hakkı vererek yetenekli hissettir - $25.000)</span>
+                </button>
+                <button id="upg-ai-slots" class="action-btn upgrade-btn">
+                    <strong>Adaptif YZ Algoritmaları</strong>
+                    <span>(Boğ ve Bırak / Dinamik şans - $50.000)</span>
+                </button>
+            </div>
+
+            <div id="tab-dark" class="tab-content">
+                <button id="upg-cashless" class="action-btn upgrade-btn">
+                    <strong>Nakitsiz (Kredili) Sistem</strong>
+                    <span>(Fiziksel para hissini yok et - $15.000)</span>
+                </button>
+                <button id="upg-cashback" class="action-btn upgrade-btn">
+                    <strong>Kayıp İadesi Programı</strong>
+                    <span>(Kaybetmeyi ödülle eşleştir - $20.000)</span>
+                </button>
+                <button id="upg-machine-zone" class="action-btn upgrade-btn">
+                    <strong>Makine Zonu Hızlandırıcısı</strong>
+                    <span>(Bahis hızını 3x artır - $30.000)</span>
+                </button>
+                <button id="upg-online-app" class="action-btn upgrade-btn">
+                    <strong>Online Bahis Uygulaması</strong>
+                    <span>(İflas edenleri evinden sömür - $40.000)</span>
+                </button>
+                <button id="upg-reverse-withdraw" class="action-btn upgrade-btn" style="border-color: var(--neon-gold);">
+                    <strong>Ters Para Çekme (Bekletme)</strong>
+                    <span>(Büyük kazananlara parayı 24 saat verme - $60.000)</span>
+                </button>
+                <button id="upg-debt-collector" class="action-btn upgrade-btn" style="border-color: var(--neon-red);">
+                    <strong>Acımasız Tahsildar (Tefeci)</strong>
+                    <span>(Kredili borçlara %100 faiz kes - $75.000)</span>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals and Toasts -->
+    <div id="active-events-container" class="active-events">
+        <!-- Event Toasts will be injected here -->
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over-screen" class="modal hidden fullscreen">
+        <div class="modal-content game-over-content">
+            <h1 id="end-title">OYUN BİTTİ</h1>
+            <p id="end-description">Sonuçlar yükleniyor...</p>
+            <div class="stats-recap" id="end-stats">
+                <!-- End stats -->
+            </div>
+            <button onclick="location.reload()" class="action-btn restart-btn">Yeniden Başla</button>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

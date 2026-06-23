@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AE AI</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+  canvas { display: block; width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+
+let W, H, cx, cy, scale;
+
+function resize() {
+  canvas.width  = W = window.innerWidth;
+  canvas.height = H = window.innerHeight;
+  cx = W / 2;
+  cy = H / 2;
+  scale = Math.min(W, H) * 0.36;
+  buildLogo();
+  initEdge();
+}
+
+// ── Logo geometry (normalised) ───────────────────────────────────
+const APEX  = { x: 0,     y: -0.50 };
+const BBASE = { x: -0.50, y:  0.43 };
+const RBASE = { x:  0.50, y:  0.43 };
+
+function lp(a, b, t) { return { x: a.x+(b.x-a.x)*t, y: a.y+(b.y-a.y)*t }; }
+
+const CLT_n = lp(APEX, BBASE, 0.56);
+const CRT_n = lp(APEX, RBASE, 0.56);
+const CTOP_n = { x: 0, y: CLT_n.y };
+const CBOT_n = { x: 0, y: 0.43 };
+
+let lApex, lBbase, lRbase, lClt, lCrt, lCtop, lCbot;
+let LOGO_NODES, LOGO_EDGES;
+
+function ws(p) { return { x: cx + p.x * scale, y: cy + p.y * scale }; }
+
+function buildLogo() {
+  lApex  = ws(APEX);
+  lBbase = ws(BBASE);
+  lRbase = ws(RBASE);
+  lClt   = ws(CLT_n);
+  lCrt   = ws(CRT_n);
+  lCtop  = ws(CTOP_n);
+  lCbot  = ws(CBOT_n);
+
+  LOGO_NODES = [lApex, lBbase, lRbase, lClt, lCrt, lCtop, lCbot];
+  LOGO_EDGES = [
+    [lApex,  lBbase],
+    [lApex,  lRbase],
+    [lBbase, lRbase],
+    [lClt,   lCrt  ],
+    [lCtop,  lCbot  ],
+  ];
+}
+
+// ── Edge-rider particles ─────────────────────────────────────────
+const N_EDGE = 140;
+let edgePts  = [];
+
+function edgePoint(eIdx, t) {
+  const e = LOGO_EDGES[eIdx];
+  return { x: e[0].x + (e[1].x-e[0].x)*t, y: e[0].y + (e[1].y-e[0].y)*t };
+}
+
+function initEdge() {
+  edgePts = [];
+  for (let i = 0; i < N_EDGE; i++) {
+    const eIdx  = Math.floor(Math.random() * LOGO_EDGES.length);
+    const speed = (Math.random()<0.5?1:-1) * (0.0006 + Math.random()*0.002);
+    edgePts.push({
+      eIdx, t: Math.random(), speed,
+      alpha: 0.2 + Math.random()*0.55,
+      r: 0.7 + Math.random()*1.8,
+    });
+  }
+}
+
+// ── Field particles ──────────────────────────────────────────────
+const N_FIELD = 220;
+let fieldPts  = [];
+
+function initField() {
+  fieldPts = [];
+  for (let i = 0; i < N_FIELD; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const r     = scale * (0.08 + Math.random() * 1.5);
+    fieldPts.push({
+      x: cx + Math.cos(angle)*r,
+      y: cy + Math.sin(angle)*r,
+      vx: (Math.random()-0.5)*0.22,
+      vy: (Math.random()-0.5)*0.22,
+      alpha: 0.04 + Math.random()*0.15,
+      r: 0.5 + Math.random()*1.1,
+    });
+  }
+}
+
+// ── Pulse system ─────────────────────────────────────────────────
+let pulses = [];
+
+function spawnPulse() {
+  const eIdx = Math.floor(Math.random() * LOGO_EDGES.length);
+  const fwd  = Math.random() < 0.5;
+  pulses.push({
+    eIdx, t: fwd ? 0 : 1,
+    speed: (fwd?1:-1) * (0.005 + Math.random()*0.007),
+    life: 1,
+    decay: 0.005 + Math.random()*0.004,
+    cyan: Math.random() < 0.65,
+  });
+}
+setInterval(spawnPulse, 280);
+
+// ── Ripples ───────────────────────────────────────────────────────
+let ripples = [];
+
+function nodeNear(pos) {
+  for (const n of LOGO_NODES) {
+    const dx=pos.x-n.x, dy=pos.y-n.y;
+    if (dx*dx+dy*dy < 100) return n;
+  }
+  return null;
+}
+
+// ── Mouse ────────────────────────────────────────────────────────
+let mx = -9999, my = -9999;
+window.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+
+// ── Main loop ────────────────────────────────────────────────────
+let t0 = performance.now();
+
+function frame(ts) {
+  requestAnimationFrame(frame);
+  const elapsed = (ts - t0) * 0.001;
+  const breathe = (Math.sin(elapsed * 0.7) + 1) * 0.5;
+  const breathe2= (Math.sin(elapsed * 1.3 + 1) + 1) * 0.5;
+
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+
+  const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, scale * 1.0);
+  bg.addColorStop(0,  `rgba(0,50,80,${0.055 + breathe*0.03})`);
+  bg.addColorStop(0.5,`rgba(0,10,20,0.03)`);
+  bg.addColorStop(1,   'transparent');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Field particles ──
+  for (const p of fieldPts) {
+    const dxm=p.x-mx, dym=p.y-my;
+    const dm=Math.sqrt(dxm*dxm+dym*dym);
+    if (dm<180) { p.vx+=(dxm/dm)*0.014; p.vy+=(dym/dm)*0.014; }
+    const dxc=cx-p.x, dyc=cy-p.y;
+    const dc=Math.sqrt(dxc*dxc+dyc*dyc);
+    p.vx+=(dxc/dc)*0.0007; p.vy+=(dyc/dc)*0.0007;
+    p.vx*=0.986; p.vy*=0.986;
+    p.x+=p.vx;   p.y+=p.vy;
+    if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+    if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(255,255,255,${p.alpha})`;
+    ctx.fill();
+  }
+
+  // ── Field web ──
+  for (let i=0; i<fieldPts.length; i++) {
+    for (let j=i+1; j<fieldPts.length; j++) {
+      const a=fieldPts[i], b=fieldPts[j];
+      const dx=a.x-b.x, dy=a.y-b.y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d>65) continue;
+      ctx.strokeStyle=`rgba(255,255,255,${(1-d/65)*0.04})`;
+      ctx.lineWidth=0.3;
+      ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    }
+  }
+
+  // ── Edge → field connections ──
+  const edgePos = edgePts.map(ep => edgePoint(ep.eIdx, ep.t));
+  for (const fp of fieldPts) {
+    for (const ep of edgePos) {
+      const dx=fp.x-ep.x, dy=fp.y-ep.y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d>85) continue;
+      ctx.strokeStyle=`rgba(0,229,255,${(1-d/85)*0.055})`;
+      ctx.lineWidth=0.35;
+      ctx.beginPath(); ctx.moveTo(fp.x,fp.y); ctx.lineTo(ep.x,ep.y); ctx.stroke();
+    }
+  }
+
+  // ── Logo lines ──
+  ctx.save();
+  for (const [a,b] of LOGO_EDGES) {
+    ctx.strokeStyle = `rgba(0,180,230,${0.15 + breathe*0.08})`;
+    ctx.lineWidth   = 12 + breathe*4;
+    ctx.lineCap     = 'round';
+    ctx.filter      = `blur(${4 + breathe*3}px)`;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+  }
+  ctx.filter = 'none';
+  for (const [a,b] of LOGO_EDGES) {
+    ctx.shadowBlur  = 8 + breathe*8;
+    ctx.shadowColor = `rgba(255,255,255,0.5)`;
+    ctx.strokeStyle = `rgba(255,255,255,${0.88 + breathe*0.1})`;
+    ctx.lineWidth   = 2.4 + breathe*0.6;
+    ctx.lineCap     = 'round';
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+  }
+  ctx.restore();
+
+  // ── Edge riders ──
+  for (let i=0; i<edgePts.length; i++) {
+    const ep = edgePts[i];
+    ep.t += ep.speed;
+    if(ep.t>1) ep.t=0;
+    if(ep.t<0) ep.t=1;
+    const pos = edgePos[i];
+    const g=ctx.createRadialGradient(pos.x,pos.y,0,pos.x,pos.y,ep.r*7);
+    g.addColorStop(0,`rgba(0,229,255,${ep.alpha*0.3})`);
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;
+    ctx.beginPath(); ctx.arc(pos.x,pos.y,ep.r*7,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(pos.x,pos.y,ep.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(220,248,255,${ep.alpha})`;
+    ctx.fill();
+  }
+
+  // ── Pulses ──
+  for (let i=pulses.length-1; i>=0; i--) {
+    const p=pulses[i];
+    p.t   += p.speed;
+    p.life -= p.decay;
+    const pos = edgePoint(p.eIdx, Math.max(0,Math.min(1,p.t)));
+    const hit  = nodeNear(pos);
+    if (hit && p.life > 0.3) {
+      ripples.push({ x:hit.x, y:hit.y, r:0, maxR: 28+Math.random()*14, life:1, decay:0.025, cyan:p.cyan });
+      p.life = 0;
+    }
+    if(p.life<=0||p.t<0||p.t>1){ pulses.splice(i,1); continue; }
+    const e=LOGO_EDGES[p.eIdx];
+    const edx=e[1].x-e[0].x, edy=e[1].y-e[0].y;
+    const len=Math.sqrt(edx*edx+edy*edy);
+    const nx=edx/len, ny=edy/len;
+    const trail=18*p.life;
+    const col = p.cyan ? '0,229,255' : '255,255,255';
+    ctx.save();
+    ctx.shadowBlur  = 22*p.life;
+    ctx.shadowColor = `rgba(${col},0.9)`;
+    const lg=ctx.createLinearGradient(
+      pos.x-nx*trail, pos.y-ny*trail,
+      pos.x+nx*trail, pos.y+ny*trail
+    );
+    lg.addColorStop(0,'transparent');
+    lg.addColorStop(0.5,`rgba(${col},${p.life})`);
+    lg.addColorStop(1,'transparent');
+    ctx.strokeStyle=lg; ctx.lineWidth=3.5*p.life; ctx.lineCap='round';
+    ctx.beginPath();
+    ctx.moveTo(pos.x-nx*trail, pos.y-ny*trail);
+    ctx.lineTo(pos.x+nx*trail, pos.y+ny*trail);
+    ctx.stroke();
+    ctx.beginPath(); ctx.arc(pos.x,pos.y,3*p.life,0,Math.PI*2);
+    ctx.fillStyle=`rgba(${col},1)`; ctx.fill();
+    ctx.restore();
+  }
+
+  // ── Ripples ──
+  for (let i=ripples.length-1; i>=0; i--) {
+    const rp=ripples[i];
+    rp.r   += (rp.maxR - rp.r) * 0.12;
+    rp.life -= rp.decay;
+    if(rp.life<=0){ ripples.splice(i,1); continue; }
+    const col = rp.cyan ? '0,229,255' : '255,255,255';
+    ctx.beginPath();
+    ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI*2);
+    ctx.strokeStyle=`rgba(${col},${rp.life*0.6})`;
+    ctx.lineWidth=1.5*rp.life;
+    ctx.stroke();
+  }
+
+  // ── Node dots ──
+  for (const n of LOGO_NODES) {
+    const b = breathe2;
+    const gn=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,14);
+    gn.addColorStop(0, `rgba(255,255,255,${0.6+b*0.3})`);
+    gn.addColorStop(0.5,`rgba(0,229,255,${0.25+b*0.15})`);
+    gn.addColorStop(1,'transparent');
+    ctx.fillStyle=gn;
+    ctx.beginPath(); ctx.arc(n.x,n.y,14,0,Math.PI*2); ctx.fill();
+    ctx.save();
+    ctx.shadowBlur=10+b*8; ctx.shadowColor='rgba(255,255,255,0.7)';
+    ctx.beginPath(); ctx.arc(n.x,n.y,2.8,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${0.85+b*0.15})`; ctx.fill();
+    ctx.restore();
+  }
+
+  // ── Outer dashed orbit ──
+  ctx.save();
+  ctx.strokeStyle=`rgba(255,255,255,${0.035+breathe*0.015})`;
+  ctx.lineWidth=0.7;
+  ctx.setLineDash([3,14]);
+  ctx.lineDashOffset = -elapsed * 8;
+  ctx.beginPath(); ctx.arc(cx,cy,scale*0.88,0,Math.PI*2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // ── Brain sparks ──
+  const sparkCount = Math.floor(breathe2*3);
+  for(let s=0; s<sparkCount; s++){
+    const angle=Math.random()*Math.PI*2;
+    const r=scale*(0.05+Math.random()*0.15);
+    const sx=cx+Math.cos(angle)*r, sy=cy+Math.sin(angle)*r;
+    ctx.beginPath(); ctx.arc(sx,sy,0.8+Math.random()*1.2,0,Math.PI*2);
+    ctx.fillStyle=`rgba(0,229,255,${0.3+Math.random()*0.5})`; ctx.fill();
+  }
+}
+
+window.addEventListener('resize', resize);
+resize();
+initField();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
