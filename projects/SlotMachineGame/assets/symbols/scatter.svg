@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="16" fill="#0a1a2a"/>
+  <g transform="translate(64 60)">
+    <polygon points="0,-30 9,-9 32,-9 13,5 20,28 0,14 -20,28 -13,5 -32,-9 -9,-9" fill="#FFEA00" stroke="#FFD700" stroke-width="2"/>
+  </g>
+  <g opacity="0.7">
+    <polygon points="28,18 31,26 40,26 33,31 36,40 28,34 20,40 23,31 16,26 25,26" fill="#FFFFFF"/>
+    <polygon points="100,30 103,38 112,38 105,43 108,52 100,46 92,52 95,43 88,38 97,38" fill="#FFFFFF"/>
+    <polygon points="24,100 27,108 36,108 29,113 32,122 24,116 16,122 19,113 12,108 21,108" fill="#FFFFFF"/>
+  </g>
+  <text x="64" y="116" font-family="Arial Black, sans-serif" font-size="11" font-weight="900" text-anchor="middle" fill="#FFFFFF">SCATTER</text>
+</svg>

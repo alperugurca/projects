@@ -1,0 +1,256 @@
+[gd_scene load_steps=9 format=3 uid="uid://mainscene001"]
+
+[ext_resource type="Script" path="res://scripts/slot_machine.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/reel.gd" id="2_reel"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.29, 0.055, 0.102, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_reel"]
+bg_color = Color(0.96, 0.9, 0.78, 1)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+border_color = Color(0.831, 0.686, 0.216, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+bg_color = Color(0.831, 0.686, 0.216, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.5, 0.33, 0.08, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
+bg_color = Color(1, 0.84, 0.3, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_pressed"]
+bg_color = Color(0.6, 0.45, 0.1, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.15, 0.03, 0.06, 0.85)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.831, 0.686, 0.216, 0.6)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_main")
+
+[node name="Background" type="Panel" parent="."]
+offset_right = 720.0
+offset_bottom = 1280.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="Title" type="Label" parent="."]
+offset_top = 50.0
+offset_right = 720.0
+offset_bottom = 130.0
+theme_override_colors/font_color = Color(1, 0.84, 0, 1)
+theme_override_font_sizes/font_size = 52
+text = "LUCKY SLOTS"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="."]
+offset_top = 125.0
+offset_right = 720.0
+offset_bottom = 155.0
+theme_override_colors/font_color = Color(0.85, 0.75, 0.55, 1)
+theme_override_font_sizes/font_size = 14
+text = "Demo - For Fun Only"
+horizontal_alignment = 1
+
+[node name="Reels" type="Node2D" parent="."]
+position = Vector2(360, 420)
+
+[node name="Reel1" type="Node2D" parent="Reels"]
+position = Vector2(-180, 0)
+script = ExtResource("2_reel")
+
+[node name="Display" type="Sprite2D" parent="Reels/Reel1"]
+position = Vector2(0, 0)
+scale = Vector2(1.2, 1.2)
+
+[node name="ReelPanel1" type="Panel" parent="Reels/Reel1"]
+offset_left = -70.0
+offset_top = -70.0
+offset_right = 70.0
+offset_bottom = 70.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_reel")
+mouse_filter = 2
+
+[node name="Reel2" type="Node2D" parent="Reels"]
+position = Vector2(0, 0)
+script = ExtResource("2_reel")
+
+[node name="Display" type="Sprite2D" parent="Reels/Reel2"]
+position = Vector2(0, 0)
+scale = Vector2(1.2, 1.2)
+
+[node name="ReelPanel2" type="Panel" parent="Reels/Reel2"]
+offset_left = -70.0
+offset_top = -70.0
+offset_right = 70.0
+offset_bottom = 70.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_reel")
+mouse_filter = 2
+
+[node name="Reel3" type="Node2D" parent="Reels"]
+position = Vector2(180, 0)
+script = ExtResource("2_reel")
+
+[node name="Display" type="Sprite2D" parent="Reels/Reel3"]
+position = Vector2(0, 0)
+scale = Vector2(1.2, 1.2)
+
+[node name="ReelPanel3" type="Panel" parent="Reels/Reel3"]
+offset_left = -70.0
+offset_top = -70.0
+offset_right = 70.0
+offset_bottom = 70.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_reel")
+mouse_filter = 2
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+
+[node name="BalanceLabel" type="Label" parent="UI"]
+offset_left = 60.0
+offset_top = 620.0
+offset_right = 660.0
+offset_bottom = 670.0
+theme_override_colors/font_color = Color(1, 0.84, 0, 1)
+theme_override_font_sizes/font_size = 32
+text = "Balance: 1000"
+horizontal_alignment = 1
+
+[node name="BetLabel" type="Label" parent="UI"]
+offset_left = 60.0
+offset_top = 700.0
+offset_right = 660.0
+offset_bottom = 740.0
+theme_override_colors/font_color = Color(1, 0.9, 0.8, 1)
+theme_override_font_sizes/font_size = 24
+text = "Bet: 10"
+horizontal_alignment = 1
+
+[node name="BetSlider" type="HSlider" parent="UI"]
+offset_left = 120.0
+offset_top = 750.0
+offset_right = 600.0
+offset_bottom = 780.0
+min_value = 1.0
+max_value = 100.0
+value = 10.0
+rounded = true
+
+[node name="FreeSpinsLabel" type="Label" parent="UI"]
+offset_left = 60.0
+offset_top = 790.0
+offset_right = 660.0
+offset_bottom = 830.0
+theme_override_colors/font_color = Color(1, 0.5, 0.2, 1)
+theme_override_font_sizes/font_size = 22
+text = "FREE SPINS: 0"
+horizontal_alignment = 1
+visible = false
+
+[node name="SpinButton" type="Button" parent="UI"]
+offset_left = 210.0
+offset_top = 850.0
+offset_right = 510.0
+offset_bottom = 950.0
+theme_override_colors/font_color = Color(0.3, 0.05, 0.1, 1)
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+text = "SPIN!"
+
+[node name="ResultLabel" type="Label" parent="UI"]
+offset_left = 60.0
+offset_top = 980.0
+offset_right = 660.0
+offset_bottom = 1040.0
+theme_override_colors/font_color = Color(1, 0.95, 0.85, 1)
+theme_override_font_sizes/font_size = 32
+text = "Good Luck!"
+horizontal_alignment = 1
+
+[node name="MuteButton" type="Button" parent="UI"]
+offset_left = 650.0
+offset_top = 20.0
+offset_right = 700.0
+offset_bottom = 70.0
+theme_override_font_sizes/font_size = 24
+text = "S"
+
+[node name="PayoutLabel" type="Label" parent="UI"]
+offset_left = 30.0
+offset_top = 1090.0
+offset_right = 690.0
+offset_bottom = 1250.0
+theme_override_colors/font_color = Color(0.85, 0.75, 0.55, 1)
+theme_override_font_sizes/font_size = 13
+text = "PAYOUTS (3-match): 7=50x  diamond=30x  bell=20x  BAR=15x  grape=10x  orange=8x  lemon=5x  cherry=3x  | 2-match = 20%  |  WILD substitutes  |  3 SCATTER = 10 free spins"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="DailyBonusPanel" type="Panel" parent="."]
+visible = false
+offset_left = 110.0
+offset_top = 480.0
+offset_right = 610.0
+offset_bottom = 700.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="DailyBonusLabel" type="Label" parent="DailyBonusPanel"]
+offset_left = 20.0
+offset_top = 30.0
+offset_right = 480.0
+offset_bottom = 110.0
+theme_override_colors/font_color = Color(1, 0.84, 0, 1)
+theme_override_font_sizes/font_size = 28
+text = "Out of Credits!
+Claim Daily Bonus"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ClaimBonusButton" type="Button" parent="DailyBonusPanel"]
+offset_left = 130.0
+offset_top = 140.0
+offset_right = 370.0
+offset_bottom = 200.0
+theme_override_colors/font_color = Color(0.3, 0.05, 0.1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+text = "+500 CREDITS"

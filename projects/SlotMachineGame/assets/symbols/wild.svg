@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="16" fill="#1a0a2a"/>
+  <polygon points="64,18 76,52 112,52 82,72 94,108 64,86 34,108 46,72 16,52 52,52" fill="#FFD700" stroke="#FFA500" stroke-width="3"/>
+  <text x="64" y="118" font-family="Arial Black, sans-serif" font-size="14" font-weight="900" text-anchor="middle" fill="#FFFFFF">WILD</text>
+</svg>
