@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Color Synesthesia Journal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            transition: background 2s ease;
+        }
+
+        #canvas-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .journal-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+            font-style: italic;
+        }
+
+        #emotion-input {
+            width: 100%;
+            min-height: 200px;
+            padding: 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            resize: vertical;
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        #emotion-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .emotion-stats {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-around;
+            color: white;
+            font-size: 0.9em;
+        }
+
+        .stat {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .memories-container {
+            margin-top: 20px;
+            max-height: 150px;
+            overflow-y: auto;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .memory-bubble {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            border: 2px solid white;
+            position: relative;
+        }
+
+        .memory-bubble:hover {
+            transform: scale(1.2);
+        }
+
+        .memory-date {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7em;
+            color: white;
+            white-space: nowrap;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        #word-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas-background"></canvas>
+    <canvas id="word-particles"></canvas>
+    
+    <div class="container">
+        <div class="journal-container">
+            <h1>🎨 Emotion Synesthesia</h1>
+            <p class="subtitle">Your feelings, painted in living color</p>
+            
+            <textarea 
+                id="emotion-input" 
+                placeholder="Begin writing... Watch the colors respond to your emotions. Every word paints a unique landscape of feeling."
+            ></textarea>
+            
+            <div class="emotion-stats">
+                <div class="stat">
+                    <div class="stat-label">Intensity</div>
+                    <div id="intensity">0%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Dominant Emotion</div>
+                    <div id="dominant">Neutral</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Color Harmony</div>
+                    <div id="harmony">—</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="save-btn">💾 Save Memory</button>
+                <button id="blend-btn">🌈 Blend All</button>
+                <button id="clear-btn">✨ New Canvas</button>
+            </div>
+
+            <div class="memories-container" id="memories"></div>
+        </div>
+    </div>
+
+    <script>
+        // Emotion-to-color mapping
+        const emotionColors = {
+            joy: { hue: 45, saturation: 85, lightness: 60 },
+            love: { hue: 340, saturation: 75, lightness: 65 },
+            excitement: { hue: 15, saturation: 90, lightness: 55 },
+            peace: { hue: 180, saturation: 50, lightness: 70 },
+            calm: { hue: 200, saturation: 45, lightness: 65 },
+            sadness: { hue: 220, saturation: 60, lightness: 40 },
+            anger: { hue: 0, saturation: 85, lightness: 45 },
+            fear: { hue: 270, saturation: 50, lightness: 35 },
+            anxiety: { hue: 280, saturation: 65, lightness: 45 },
+            hope: { hue: 160, saturation: 60, lightness: 60 },
+            gratitude: { hue: 120, saturation: 55, lightness: 65 },
+            nostalgia: { hue: 30, saturation: 50, lightness: 55 },
+            energy: { hue: 60, saturation: 95, lightness: 50 },
+            melancholy: { hue: 240, saturation: 40, lightness: 45 }
+        };
+
+        const emotionKeywords = {
+            joy: ['happy', 'joyful', 'delighted', 'cheerful', 'glad', 'pleased', 'wonderful', 'amazing'],
+            love: ['love', 'adore', 'cherish', 'affection', 'care', 'heart', 'beloved', 'darling'],
+            excitement: ['excited', 'thrilled', 'energized', 'enthusiastic', 'pumped', 'exhilarated'],
+            peace: ['peaceful', 'serene', 'tranquil', 'quiet', 'still', 'gentle', 'harmonious'],
+            calm: ['calm', 'relaxed', 'composed', 'centered', 'balanced', 'steady'],
+            sadness: ['sad', 'down', 'unhappy', 'depressed', 'blue', 'sorrowful', 'grief', 'cry'],
+            anger: ['angry', 'mad', 'furious', 'irritated', 'frustrated', 'rage', 'annoyed'],
+            fear: ['scared', 'afraid', 'frightened', 'terrified', 'fearful', 'worried'],
+            anxiety: ['anxious', 'nervous', 'stressed', 'tense', 'uneasy', 'restless'],
+            hope: ['hopeful', 'optimistic', 'encouraged', 'inspired', 'motivated'],
+            gratitude: ['grateful', 'thankful', 'blessed', 'appreciative', 'fortunate'],
+            nostalgia: ['remember', 'memory', 'past', 'nostalgic', 'reminisce', 'miss'],
+            energy: ['energetic', 'alive', 'vibrant', 'dynamic', 'powerful', 'strong'],
+            melancholy: ['melancholy', 'wistful', 'lonely', 'empty', 'longing', 'bittersweet']
+        };
+
+        // Canvas setup
+        const canvas = document.getElementById('canvas-background');
+        const ctx = canvas.getContext('2d');
+        const particleCanvas = document.getElementById('word-particles');
+        const particleCtx = particleCanvas.getContext('2d');
+        
+        let currentColors = [];
+        let particles = [];
+        let memories = JSON.parse(localStorage.getItem('emotionMemories') || '[]');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particleCanvas.width = window.innerWidth;
+            particleCanvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Color blob class
+        class ColorBlob {
+            constructor(x, y, color, size) {
+                this.x = x;
+                this.y = y;
+                this.targetX = x;
+                this.targetY = y;
+                this.color = color;
+                this.size = size;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                this.x += (this.targetX - this.x) * 0.01;
+                this.y += (this.targetY - this.y) * 0.01;
+
+                if (Math.random() < 0.01) {
+                    this.targetX = Math.random() * canvas.width;
+                    this.targetY = Math.random() * canvas.height;
+                }
+            }
+
+            draw() {
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+                gradient.addColorStop(0, `hsla(${this.color.hue}, ${this.color.saturation}%, ${this.color.lightness}%, 0.4)`);
+                gradient.addColorStop(1, `hsla(${this.color.hue}, ${this.color.saturation}%, ${this.color.lightness}%, 0)`);
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        // Word particle class
+        class WordParticle {
+            constructor(word, x, y, color) {
+                this.word = word;
+                this.x = x;
+                this.y = y;
+                this.vy = -1;
+                this.life = 1;
+                this.color = color;
+            }
+
+            update() {
+                this.y += this.vy;
+                this.life -= 0.01;
+            }
+
+            draw() {
+                particleCtx.save();
+                particleCtx.globalAlpha = this.life;
+                particleCtx.fillStyle = `hsl(${this.color.hue}, ${this.color.saturation}%, ${this.color.lightness}%)`;
+                particleCtx.font = '16px Arial';
+                particleCtx.fillText(this.word, this.x, this.y);
+                particleCtx.restore();
+            }
+        }
+
+        function analyzeEmotions(text) {
+            const words = text.toLowerCase().split(/\s+/);
+            const emotionScores = {};
+            
+            for (const [emotion, keywords] of Object.entries(emotionKeywords)) {
+                emotionScores[emotion] = 0;
+                for (const keyword of keywords) {
+                    for (const word of words) {
+                        if (word.includes(keyword)) {
+                            emotionScores[emotion]++;
+                        }
+                    }
+                }
+            }
+
+            return emotionScores;
+        }
+
+        function updateVisualization(text) {
+            if (!text.trim()) {
+                currentColors = [{ hue: 200, saturation: 20, lightness: 50 }];
+                updateStats(0, 'Neutral', 'Waiting');
+                return;
+            }
+
+            const emotionScores = analyzeEmotions(text);
+            const sortedEmotions = Object.entries(emotionScores)
+                .sort((a, b) => b[1] - a[1])
+                .filter(([_, score]) => score > 0);
+
+            if (sortedEmotions.length === 0) {
+                currentColors = [{ hue: 200, saturation: 30, lightness: 60 }];
+                updateStats(text.length / 10, 'Reflective', 'Soft');
+            } else {
+                currentColors = sortedEmotions.slice(0, 3).map(([emotion]) => emotionColors[emotion]);
+                
+                const dominantEmotion = sortedEmotions[0][0];
+                const intensity = Math.min(100, (sortedEmotions[0][1] / text.split(/\s+/).length) * 100 * 10);
+                const harmony = sortedEmotions.length === 1 ? 'Pure' : sortedEmotions.length === 2 ? 'Dual' : 'Complex';
+                
+                updateStats(intensity, dominantEmotion.charAt(0).toUpperCase() + dominantEmotion.slice(1), harmony);
+            }
+
+            // Add color blobs
+            if (currentColors.length > 0 && Math.random() < 0.3) {
+                const color = currentColors[Math.floor(Math.random() * currentColors.length)];
+                const blob = new ColorBlob(
+                    Math.random() * canvas.width,
+                    Math.random() * canvas.height,
+                    color,
+                    Math.random() * 300 + 200
+                );
+                if (particles.length > 20) particles.shift();
+                particles.push(blob);
+            }
+        }
+
+        function updateStats(intensity, dominant, harmony) {
+            document.getElementById('intensity').textContent = Math.round(intensity) + '%';
+            document.getElementById('dominant').textContent = dominant;
+            document.getElementById('harmony').textContent = harmony;
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(30, 30, 40, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(blob => {
+                blob.update();
+                blob.draw();
+            });
+
+            particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                if (particles[i] instanceof WordParticle) {
+                    particles[i].update();
+                    particles[i].draw();
+                    if (particles[i].life <= 0) {
+                        particles.splice(i, 1);
+                    }
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Event listeners
+        const input = document.getElementById('emotion-input');
+        let typingTimeout;
+        
+        input.addEventListener('input', (e) => {
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                updateVisualization(e.target.value);
+                
+                // Add word particle occasionally
+                if (Math.random() < 0.2 && currentColors.length > 0) {
+                    const words = e.target.value.split(/\s+/).filter(w => w.length > 4);
+                    if (words.length > 0) {
+                        const randomWord = words[Math.floor(Math.random() * words.length)];
+                        const color = currentColors[Math.floor(Math.random() * currentColors.length)];
+                        particles.push(new WordParticle(
+                            randomWord,
+                            Math.random() * particleCanvas.width,
+                            particleCanvas.height,
+                            color
+                        ));
+                    }
+                }
+            }, 100);
+        });
+
+        document.getElementById('save-btn').addEventListener('click', () => {
+            const text = input.value.trim();
+            if (!text) return;
+
+            const memory = {
+                text: text.substring(0, 200),
+                colors: currentColors,
+                date: new Date().toLocaleString(),
+                timestamp: Date.now()
+            };
+
+            memories.unshift(memory);
+            if (memories.length > 20) memories.pop();
+            localStorage.setItem('emotionMemories', JSON.stringify(memories));
+            
+            renderMemories();
+            alert('🎨 Memory saved! Click on it to relive the colors.');
+        });
+
+        document.getElementById('blend-btn').addEventListener('click', () => {
+            const allColors = memories.flatMap(m => m.colors);
+            if (allColors.length === 0) return;
+
+            currentColors = allColors.slice(0, 5);
+            particles = [];
+            
+            for (let i = 0; i < 15; i++) {
+                const color = allColors[Math.floor(Math.random() * allColors.length)];
+                particles.push(new ColorBlob(
+                    Math.random() * canvas.width,
+                    Math.random() * canvas.height,
+                    color,
+                    Math.random() * 400 + 200
+                ));
+            }
+        });
+
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            input.value = '';
+            particles = [];
+            currentColors = [];
+            updateStats(0, 'Neutral', '—');
+        });
+
+        function renderMemories() {
+            const container = document.getElementById('memories');
+            container.innerHTML = '';
+
+            memories.forEach((memory, index) => {
+                const bubble = document.createElement('div');
+                bubble.className = 'memory-bubble';
+                
+                const avgColor = memory.colors[0];
+                bubble.style.background = `linear-gradient(135deg, 
+                    hsl(${avgColor.hue}, ${avgColor.saturation}%, ${avgColor.lightness}%),
+                    hsl(${(avgColor.hue + 30) % 360}, ${avgColor.saturation}%, ${avgColor.lightness - 10}%))`;
+                
+                const date = document.createElement('div');
+                date.className = 'memory-date';
+                date.textContent = new Date(memory.timestamp).toLocaleDateString();
+                bubble.appendChild(date);
+
+                bubble.addEventListener('click', () => {
+                    currentColors = memory.colors;
+                    input.value = memory.text;
+                    updateVisualization(memory.text);
+                });
+
+                container.appendChild(bubble);
+            });
+        }
+
+        renderMemories();
+    </script>
+</body>
+</html>
