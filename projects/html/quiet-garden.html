@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiet Garden — plant something</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #0b1020; font-family: 'Georgia', serif; cursor: none; }
+  #sky { position: fixed; inset: 0; z-index: 0; transition: background 8s linear; }
+  #stars { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+  #ground {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 38%; z-index: 2;
+    background: linear-gradient(#3a2a1a 0%, #1a1208 100%);
+    box-shadow: inset 0 18px 40px rgba(0,0,0,0.6);
+  }
+  #canvas { position: fixed; inset: 0; z-index: 3; }
+  #hud {
+    position: fixed; top: 18px; left: 0; right: 0; z-index: 10;
+    text-align: center; color: #f4ead5; text-shadow: 0 2px 8px #000;
+    pointer-events: none; user-select: none; letter-spacing: 2px;
+  }
+  #title { font-size: 26px; font-style: italic; opacity: 0.92; }
+  #sub { font-size: 13px; opacity: 0.65; margin-top: 6px; font-family: sans-serif; letter-spacing: 4px; text-transform: uppercase; }
+  #counter {
+    position: fixed; bottom: 18px; right: 22px; z-index: 10; color: #f4ead5;
+    font-family: sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase;
+    opacity: 0.7; pointer-events: none; user-select: none;
+  }
+  #cursor {
+    position: fixed; z-index: 20; width: 14px; height: 14px; border-radius: 50%;
+    border: 1.5px solid #f4ead5; pointer-events: none; transform: translate(-50%,-50%);
+    transition: width 0.12s, height 0.12s, background 0.2s;
+    mix-blend-mode: difference;
+  }
+  #cursor.seed { width: 8px; height: 8px; background: #f4ead5; }
+  #whisper {
+    position: fixed; left: 50%; bottom: 42%; transform: translateX(-50%);
+    z-index: 11; color: #f4ead5; font-style: italic; font-size: 18px;
+    opacity: 0; transition: opacity 2s; pointer-events: none;
+    text-shadow: 0 2px 12px #000; user-select: none; letter-spacing: 1px;
+    text-align: center; width: 80%; max-width: 600px; line-height: 1.5;
+  }
+  #controls {
+    position: fixed; top: 18px; right: 18px; z-index: 11;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .ctl {
+    background: rgba(20,16,28,0.55); color: #f4ead5; border: 1px solid rgba(244,234,213,0.3);
+    border-radius: 6px; padding: 7px 12px; font-family: sans-serif; font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase; cursor: none; backdrop-filter: blur(4px);
+    transition: background 0.25s, transform 0.12s;
+  }
+  .ctl:hover { background: rgba(70,50,90,0.6); transform: translateY(-1px); }
+  .moon { position: fixed; border-radius: 50%; z-index: 1; pointer-events: none; transition: transform 8s linear, opacity 6s; }
+</style>
+</head>
+<body>
+<div id="sky"></div>
+<div class="moon" id="moon"></div>
+<div id="stars"></div>
+<div id="ground"></div>
+<canvas id="canvas"></canvas>
+<div id="hud">
+  <div id="title">Quiet Garden</div>
+  <div id="sub">click the soil to plant</div>
+</div>
+<div id="whisper"></div>
+<div id="controls">
+  <button class="ctl" id="timeBtn">change time</button>
+  <button class="ctl" id="windBtn">wind · calm</button>
+  <button class="ctl" id="clearBtn">clear</button>
+  <button class="ctl" id="soundBtn">sound · off</button>
+</div>
+<div id="counter">0 things growing</div>
+<div id="cursor"></div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W = 0, H = 0, GROUND_Y = 0;
+function resize() {
+  W = canvas.width = innerWidth;
+  H = canvas.height = innerHeight;
+  GROUND_Y = H * 0.62;
+}
+resize();
+addEventListener('resize', resize);
+
+// ---- day/night ----
+const phases = [
+  { name: 'dusk',   sky: ['#2a1a3a','#6b3b5a','#c0705a'], mood: 0.25 },
+  { name: 'night',  sky: ['#05060f','#0d1230','#1a2245'], mood: 0.05 },
+  { name: 'dawn',   sky: ['#1a2040','#c0705a','#f0c890'], mood: 0.35 },
+  { name: 'noon',   sky: ['#3a6aa0','#7fb4e0','#bfe0f5'], mood: 0.85 },
+];
+let phaseIdx = 0;
+const skyEl = document.getElementById('sky');
+function applyPhase() {
+  const p = phases[phaseIdx];
+  skyEl.style.background = `linear-gradient(${p.sky.join(',')})`;
+  document.getElementById('stars').style.opacity = p.mood < 0.2 ? '1' : '0';
+  updateMoon(p);
+}
+function updateMoon(p){
+  const m = document.getElementById('moon');
+  if (p.mood < 0.3) {
+    const size = 90;
+    m.style.width = size+'px'; m.style.height = size+'px';
+    m.style.background = 'radial-gradient(circle at 35% 35%, #fff8e0, #d8c890)';
+    m.style.boxShadow = '0 0 50px rgba(255,248,220,0.5)';
+    m.style.top = (H*0.13)+'px';
+    m.style.left = (W*0.72)+'px';
+    m.style.opacity = '0.95';
+  } else {
+    const size = 110;
+    m.style.width = size+'px'; m.style.height = size+'px';
+    m.style.background = 'radial-gradient(circle at 35% 35%, #fffbe0, #ffe080)';
+    m.style.boxShadow = '0 0 80px rgba(255,235,150,0.7)';
+    m.style.top = (H*0.1)+'px';
+    m.style.left = (W*0.15)+'px';
+    m.style.opacity = '0.9';
+  }
+}
+applyPhase();
+
+// stars
+(() => {
+  const s = document.getElementById('stars');
+  let html = '';
+  for (let i = 0; i < 120; i++) {
+    const x = Math.random()*100, y = Math.random()*60;
+    const r = Math.random()*1.4 + 0.3;
+    const d = (Math.random()*3+2).toFixed(2);
+    html += `<div style="position:absolute;left:${x}%;top:${y}%;width:${r}px;height:${r}px;border-radius:50%;background:#fff;opacity:.7;animation:tw ${d}s ease-in-out infinite alternate;"></div>`;
+  }
+  s.innerHTML = html;
+})();
+const style = document.createElement('style');
+style.textContent = '@keyframes tw { from{opacity:.2} to{opacity:.9} }';
+document.head.appendChild(style);
+
+// ---- wind ----
+let wind = 0.4;
+document.getElementById('timeBtn').onclick = () => { phaseIdx = (phaseIdx+1)%phases.length; applyPhase(); resetWhisper(); };
+document.getElementById('windBtn').onclick = (e) => {
+  const states = [{'calm':0.15,'label':'wind · calm'},{'breeze':0.5,'label':'wind · breeze'},{'gale':1.4,'label':'wind · gale'}];
+  const names = ['calm','breeze','gale'];
+  let i = names.findIndex(n => e.target.textContent.includes(n));
+  i = (i+1)%3;
+  wind = states[i][names[i]];
+  e.target.textContent = states[i].label;
+};
+document.getElementById('clearBtn').onclick = () => { plants = []; fireflies = []; updateCounter(); whisper('the garden forgets.'); };
+
+// ---- plants ----
+const plants = [];
+const fireflies = [];
+
+function rand(a,b){ return a + Math.random()*(b-a); }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+const petals = ['#ff7eb9','#ffb38a','#ffd166','#c780ff','#7adfff','#ff9ad0','#a0e86f','#ffa0a0'];
+const leafCols = ['#4a7c3a','#3c6b2e','#5b8a3a','#6a9540','#4f8033'];
+
+function makeStemPath(x, base, segs, swayFn) {
+  // returns array of {x,y,thick} points top->bottom
+  const pts = [];
+  for (let i = segs; i >= 0; i--) {
+    const t = i/segs;
+    pts.push({ y: base - t*Math.abs(segs*9), x: x + swayFn(t), thick: 1.8*(1-t) + 0.6 });
+  }
+  return pts;
+}
+
+function spawnPlant(x, y) {
+  const segs = Math.floor(rand(7, 16));
+  const height = rand(60, 170);
+  const curve = rand(-0.6, 0.6);
+  const swayFn = (t) => curve * Math.sin(t * Math.PI) * 18 + Math.sin(t*3)*4;
+  const kind = pick(['flower','grass','sprout','lily','fiddle']);
+  const pc = pick(petals);
+  const lc = pick(leafCols);
+  const plant = {
+    x, y, segs, height, kind, swayFn, color: pc, leaf: lc, leafSide: Math.random()<0.5?-1:1,
+    age: 0, maturity: rand(0.8, 2.2), flowers: Math.floor(rand(1,4)), angle: rand(-0.4,0.4)
+  };
+  plants.push(plant);
+  updateCounter();
+}
+
+function updateCounter() {
+  document.getElementById('counter').textContent = plants.length + (plants.length===1?' thing':' things') + ' growing';
+  if (fireflies.length>0) document.getElementById('counter').textContent += ' · ' + fireflies.length + ' lights';
+}
+
+// ---- whispers ----
+const lines = [
+  "even the smallest seed remembers the sun.",
+  "you don't have to bloom all at once.",
+  "growth is quiet work, mostly unseen.",
+  "some things only thrive when you stop watching.",
+  "every garden is a small rebellion against ending.",
+  "be patient with what is still underground.",
+  "the wind carries more than it takes.",
+];
+let wTimer = null;
+function whisper(text) {
+  const w = document.getElementById('whisper');
+  w.textContent = text;
+  w.style.opacity = '0.78';
+  clearTimeout(wTimer);
+  wTimer = setTimeout(()=> w.style.opacity='0', 5000);
+}
+function resetWhisper(){ if(wTimer) clearTimeout(wTimer); document.getElementById('whisper').style.opacity='0'; }
+
+// ---- audio (ambient drone via Web Audio) ----
+let audioCtx = null, droneNodes = [], soundOn = false;
+document.getElementById('soundBtn').onclick = (e) => {
+  if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  soundOn = !soundOn;
+  e.target.textContent = 'sound · ' + (soundOn?'on':'off');
+  if (soundOn) startDrone(); else stopDrone();
+};
+function startDrone() {
+  const freqs = [110, 165, 220, 330];
+  freqs.forEach((f,i) => {
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = i===0?'sine':'triangle';
+    osc.frequency.value = f;
+    g.gain.value = 0;
+    g.gain.setTargetAtTime(0.03/audioCtx.sampleRate*freqs.length, audioCtx.currentTime, 1.5);
+    const lfo = audioCtx.createOscillator();
+    const lfoG = audioCtx.createGain();
+    lfo.frequency.value = 0.05 + i*0.03; lfoG.gain.value = 1.2;
+    lfo.connect(lfoG); lfoG.connect(osc.frequency);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(); lfo.start();
+    droneNodes.push({osc,g,lfo});
+  });
+}
+function stopDrone() {
+  droneNodes.forEach(n => { try{n.g.gain.setTargetAtTime(0, audioCtx.currentTime, 0.5);}catch(e){} });
+  setTimeout(()=> droneNodes.forEach(n => { try{n.osc.stop(); n.lfo.stop();}catch(e){} }), 1500);
+  droneNodes = [];
+}
+function pluck(freq) {
+  if (!soundOn || !audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type='sine'; osc.frequency.value=freq;
+  g.gain.setValueAtTime(0.18, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.8);
+  osc.connect(g); g.connect(audioCtx.destination);
+  osc.start(); osc.stop(audioCtx.currentTime+0.9);
+}
+
+// ---- input ----
+const cursor = document.getElementById('cursor');
+addEventListener('mousemove', e => { cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px'; });
+addEventListener('mousedown', e => {
+  if (e.target.classList.contains('ctl')) return;
+  if (e.clientY > GROUND_Y) {
+    const x = e.clientX;
+    const y = e.clientY + rand(-2, 8);
+    spawnPlant(x, y);
+    pluck([392,440,523,587,659][Math.floor(Math.random()*5)]);
+    cursor.classList.add('seed');
+    setTimeout(()=> cursor.classList.remove('seed'), 200);
+    if (Math.random() < 0.5) whisper(pick(lines));
+  } else {
+    // spawn a firefly in the sky
+    fireflies.push({ x:e.clientX, y:e.clientY, vx:rand(-0.3,0.3), vy:rand(-0.3,0.3), phase:rand(0,6), color:pick(['#fff6a0','#a0f0ff','#ffb0ff']) });
+    if (fireflies.length > 60) fireflies.shift();
+    updateCounter();
+  }
+});
+
+// ---- render ----
+let t = 0;
+function loop() {
+  t += 0.016;
+  ctx.clearRect(0,0,W,H);
+
+  // fireflies
+  fireflies.forEach(f => {
+    f.x += f.vx + Math.sin(t*0.5 + f.phase)*0.4;
+    f.y += f.vy + Math.cos(t*0.4 + f.phase)*0.3;
+    if (f.x<0) f.x=W; if (f.x>W) f.x=0; if (f.y<0) f.y=H; if (f.y>GROUND_Y) f.y=0;
+    const glow = 0.5 + Math.sin(t*2 + f.phase)*0.5;
+    ctx.beginPath();
+    ctx.arc(f.x, f.y, 9*glow+2, 0, Math.PI*2);
+    ctx.fillStyle = f.color;
+    ctx.globalAlpha = glow*0.18;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(f.x, f.y, 1.8, 0, Math.PI*2);
+    ctx.globalAlpha = glow;
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+
+  // wind gust
+  const gust = Math.sin(t*0.5)*0.5 + 1;
+
+  // plants
+  plants.forEach(p => {
+    p.age += 0.016;
+    const mature = Math.min(1, p.age / p.maturity);
+    const segLen = (p.height/p.segs) * mature;
+    const sway = p.swayFn;
+    // build stem
+    ctx.strokeStyle = '#2c4a22';
+    ctx.lineCap = 'round';
+    let px = p.x, py = p.y;
+    const pts = [];
+    for (let i = 0; i <= p.segs; i++) {
+      const tt = i/p.segs;
+      const yy = p.y - i*segLen;
+      const xx = p.x + sway(tt)*wind*gust*0.6 + Math.sin(t*0.8 + p.angle + i*0.4)*wind*gust*0.8;
+      pts.push({x:xx,y:yy,th:i});
+      if (i>0) {
+        ctx.lineWidth = (1.8*(1-tt) + 0.7) * mature;
+        ctx.beginPath();
+        ctx.moveTo(pts[i-1].x, pts[i-1].y);
+        ctx.lineTo(xx, yy);
+        ctx.stroke();
+      }
+    }
+    // leaves
+    for (let i = 2; i < p.segs; i += Math.floor(rand(2,4))) {
+      if (i >= pts.length-1) break;
+      const a = pts[i];
+      const an = pts[i+1];
+      const tilt = Math.atan2(an.y-a.y, an.x-a.x);
+      const ls = (1 - i/p.segs) * 22 * mature;
+      if (ls < 2) continue;
+      ctx.fillStyle = p.leaf;
+      ctx.save();
+      ctx.translate(a.x, a.y);
+      ctx.rotate(tilt + Math.PI/2 * p.leafSide);
+      ctx.beginPath();
+      ctx.ellipse(0, -ls*0.4, ls*0.4, ls*0.8, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+    // flowers at top
+    if (mature > 0.7) {
+      for (let f = 0; f < p.flowers; f++) {
+        const topP = pts[pts.length-1];
+        const fx = topP.x + Math.sin(f*3 + p.angle)*14;
+        const fy = topP.y - f*4;
+        const r = 9 * (mature) * (1 + Math.sin(t*1.5+f)*0.05);
+        // petals
+        const petalsCount = 6 + (f%2);
+        for (let k = 0; k < petalsCount; k++) {
+          const ang = (k/petalsCount)*Math.PI*2 + t*0.2;
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = 0.92;
+          ctx.beginPath();
+          ctx.ellipse(fx + Math.cos(ang)*r*0.5, fy + Math.sin(ang)*r*0.5, r*0.45, r*0.85, ang+1.57, 0, Math.PI*2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        // center
+        ctx.fillStyle = '#ffd84a';
+        ctx.beginPath();
+        ctx.arc(fx, fy, r*0.32, 0, Math.PI*2);
+        ctx.fill();
+      }
+    }
+  });
+
+  requestAnimationFrame(loop);
+}
+loop();
+
+// little hint whisper on load
+setTimeout(()=> whisper('click the soil. be patient.'), 1200);
+</script>
+</body>
+</html>
